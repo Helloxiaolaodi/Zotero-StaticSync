@@ -126,21 +126,27 @@ function normalizeShareURLTemplate(input: string): string {
 
 // -- Export scope helpers ------------------------------------
 
-async function collectAllCollectionsRecursive(col: Zotero.Collection): Promise<Zotero.Item[]> {
+interface ItemWithPath {
+  item: Zotero.Item;
+  collectionPath: string[];
+}
+
+async function collectAllCollectionsRecursive(col: Zotero.Collection): Promise<ItemWithPath[]> {
   const seen = new Set<string>();
-  const result: Zotero.Item[] = [];
-  const stack: Zotero.Collection[] = [col];
+  const result: ItemWithPath[] = [];
+  const stack: { collection: Zotero.Collection }[] = [{ collection: col }];
   while (stack.length) {
-    const c = stack.pop()!;
-    const items = await c.getChildItems();
+    const { collection } = stack.pop()!;
+    const colPath = getCollectionPath(collection);
+    const items = await collection.getChildItems();
     for (const it of items) {
       if (it.isRegularItem() && !seen.has(it.key)) {
         seen.add(it.key);
-        result.push(it);
+        result.push({ item: it, collectionPath: colPath });
       }
     }
-    const children = c.getChildCollections() as Zotero.Collection[];
-    for (const child of children) stack.push(child);
+    const children = collection.getChildCollections() as Zotero.Collection[];
+    for (const child of children) stack.push({ collection: child });
   }
   return result;
 }
@@ -245,8 +251,18 @@ export class StaticSync {
       rawItems = await collectWholeLibrary(libraryID);
       exportName = libName;
     } else if (exportScope === "collectionRecursive" && collection) {
-      rawItems = await collectAllCollectionsRecursive(collection);
-      exportName = collection.name;
+      const itemsWithPath = await collectAllCollectionsRecursive(collection);
+      const parentName = collection.name;
+      {
+        const items: StaticSyncItem[] = [];
+        for (const { item, collectionPath } of itemsWithPath) {
+          const itemColName = collectionPath[collectionPath.length - 1] || parentName;
+          const itemPathText = collectionPath.join(" / ") || itemColName;
+          const itemStatus = statusField === "library" ? libName : itemPathText;
+          items.push(await this.buildItemData(item, itemColName, libName, collectionPath, itemPathText, itemStatus, itemColName));
+        }
+        return { items, exportName: collection.name, libName, colPath, colPathText: colPathText || collection.name };
+      }
     } else {
       // "collection" or default
       if (!collection) throw new Error("No collection selected. Choose a collection or set exportScope to 'library'.");
