@@ -30,7 +30,7 @@ async function requestPassword(
   const accepted = prompts.prompt(
     win as unknown as mozIDOMWindowProxy,
     "Zotero-StaticSync",
-    getString("supabase-password-prompt"),
+    getString("zotero-staticsync-supabase-password-prompt"),
     input,
     "",
     checkState,
@@ -46,9 +46,22 @@ function formatFailureMessage(failures: string[]): string {
 }
 
 async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
+  const exportScope = getPref("exportScope") || "collection";
+  const groupID = getPref("groupID").trim();
+
+  // Validate groupID early if provided
+  if (groupID) {
+    const resolvedLibID = Zotero.Groups.getLibraryIDFromGroupID(Number(groupID));
+    if (!resolvedLibID) {
+      Zotero.alert(win, "Zotero-StaticSync", getString("zotero-staticsync-error-invalid-group-id"));
+      return;
+    }
+  }
+
+  // collection is optional for "library" export scope
   const collection = staticSync.getSelectedCollection();
-  if (!collection) {
-    Zotero.alert(win, "Zotero-StaticSync", getString("error-no-collection"));
+  if (!collection && exportScope !== "library") {
+    Zotero.alert(win, "Zotero-StaticSync", getString("zotero-staticsync-error-no-collection"));
     return;
   }
 
@@ -62,24 +75,28 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
     password = value;
   }
 
+  const progressLabel = exportScope === "library"
+    ? getString("zotero-staticsync-sync-progress-start-library")
+    : getString("zotero-staticsync-sync-progress-start", {
+        args: { collection: collection?.name || "" },
+      });
+
   const progress = new ztoolkit.ProgressWindow("Zotero-StaticSync", {
     closeOnClick: true,
     closeTime: -1,
   })
     .createLine({
-      text: getString("sync-progress-start", {
-        args: { collection: collection.name },
-      }),
+      text: progressLabel,
       progress: 20,
     })
     .show();
 
   try {
-    const result = await staticSync.syncCollection(collection, { password });
+    const result = await staticSync.syncCollection(collection || undefined, { password });
     if (!result.successCount && !result.failureCount) {
       progress.changeLine({
         progress: 100,
-        text: getString("error-empty-collection"),
+        text: getString("zotero-staticsync-error-empty-collection"),
         type: "warning",
       });
       progress.startCloseTimer(6000);
@@ -91,18 +108,22 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
     }
 
     const successText = result.shareUrl
-      ? getString("sync-success-supabase", {
+      ? getString("zotero-staticsync-sync-success-supabase", {
           args: {
             count: result.successCount,
             url: result.shareUrl,
           },
         })
-      : getString("sync-success-github", {
-          args: {
-            count: result.successCount,
-            collection: collection.name,
-          },
-        });
+      : (exportScope === "library"
+        ? getString("zotero-staticsync-sync-success-github-library", {
+            args: { count: result.successCount, library: result.exportName || "" },
+          })
+        : getString("zotero-staticsync-sync-success-github", {
+            args: {
+              count: result.successCount,
+              collection: result.exportName || "",
+            },
+          }));
 
     progress.changeLine({
       progress: 100,
@@ -115,7 +136,7 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
       Zotero.alert(
         win,
         "Zotero-StaticSync",
-        `${getString("sync-partial-failure", {
+        `${getString("zotero-staticsync-sync-partial-failure", {
           args: { count: result.failureCount },
         })}\n\n${formatFailureMessage(result.failures)}`,
       );
@@ -140,13 +161,18 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
 
   const menuItem = win.document.createXULElement("menuitem");
   menuItem.id = MENU_ID;
-  menuItem.setAttribute("label", getString("collection-menu-label"));
+  menuItem.setAttribute("label", getString("zotero-staticsync-collection-menu-label"));
   menuItem.addEventListener("command", () => {
     void handleSyncCommand(win);
   });
 
   popup.addEventListener("popupshowing", () => {
-    const collection = staticSync.getSelectedCollection();
+    const exportScope = getPref("exportScope") || "collection";
+    // For library scope, always show the menu item
+    // For collection scope, only show when a collection is selected
+    const collection = exportScope === "library"
+      ? { name: "" } // placeholder - always visible
+      : staticSync.getSelectedCollection();
     menuItem.setAttribute("hidden", collection ? "false" : "true");
   });
 

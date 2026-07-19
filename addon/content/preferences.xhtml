@@ -1,4 +1,4 @@
-<linkset>
+﻿<linkset>
   <html:link rel="localization" href="__addonRef__-preferences.ftl" />
 </linkset>
 <groupbox
@@ -6,6 +6,7 @@
 >
   <html:h2 data-l10n-id="pref-title"></html:h2>
 
+  <!-- Mode -->
   <hbox align="center">
     <label value="Mode" />
     <menulist id="zotero-prefpane-__addonRef__-mode" preference="mode">
@@ -18,6 +19,7 @@
 
   <separator class="thin" />
 
+  <!-- GitHub Settings -->
   <vbox id="__addonRef__-github-settings" flex="1">
     <html:h3 data-l10n-id="pref-github-title"></html:h3>
     <hbox align="center">
@@ -66,6 +68,7 @@
     </hbox>
   </vbox>
 
+  <!-- Supabase Settings -->
   <vbox id="__addonRef__-supabase-settings" flex="1" hidden="true">
     <html:h3 data-l10n-id="pref-supabase-title"></html:h3>
     <hbox align="center">
@@ -122,7 +125,53 @@
 
   <separator class="thin" />
 
+  <!-- Export Options -->
   <html:h3 data-l10n-id="pref-export-title"></html:h3>
+
+  <!-- Export Scope -->
+  <hbox align="center">
+    <html:label
+      for="zotero-prefpane-__addonRef__-exportScope"
+      data-l10n-id="pref-export-scope"
+    ></html:label>
+    <menulist id="zotero-prefpane-__addonRef__-exportScope" preference="exportScope">
+      <menupopup>
+        <menuitem value="collection" data-l10n-id="pref-export-scope-collection" />
+        <menuitem value="collectionRecursive" data-l10n-id="pref-export-scope-recursive" />
+        <menuitem value="library" data-l10n-id="pref-export-scope-library" />
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="__addonRef__-export-scope-hint"></description>
+
+  <!-- Zotero Group ID -->
+  <hbox align="center">
+    <html:label
+      for="zotero-prefpane-__addonRef__-groupID"
+      data-l10n-id="pref-group-id"
+    ></html:label>
+    <html:input
+      id="zotero-prefpane-__addonRef__-groupID"
+      type="text"
+      preference="groupID"
+    ></html:input>
+  </hbox>
+  <description id="__addonRef__-group-id-hint"></description>
+
+  <!-- Fixed Share Slug -->
+  <hbox align="center">
+    <html:label
+      for="zotero-prefpane-__addonRef__-fixedShareSlug"
+      data-l10n-id="pref-fixed-slug"
+    ></html:label>
+    <html:input
+      id="zotero-prefpane-__addonRef__-fixedShareSlug"
+      type="text"
+      preference="fixedShareSlug"
+    ></html:input>
+  </hbox>
+  <description id="__addonRef__-fixed-slug-hint"></description>
+
   <checkbox
     id="zotero-prefpane-__addonRef__-includeNotes"
     preference="includeNotes"
@@ -139,6 +188,107 @@
     </menulist>
   </hbox>
   <description id="__addonRef__-status-hint"></description>
+
+  <separator class="thin" />
+
+  <!-- Sync Profile -->
+  <html:h3 data-l10n-id="pref-sync-profile-title"></html:h3>
+  <hbox align="center">
+    <html:label
+      for="zotero-prefpane-__addonRef__-syncProfile"
+      data-l10n-id="pref-sync-profile"
+    ></html:label>
+    <menulist id="zotero-prefpane-__addonRef__-syncProfile" preference="syncProfile">
+      <menupopup>
+        <menuitem value="static" data-l10n-id="pref-sync-profile-static" />
+        <menuitem value="collaborative" data-l10n-id="pref-sync-profile-collaborative" />
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="__addonRef__-sync-profile-hint"></description>
+
+  <!-- Collaboration Settings (shown when syncProfile = collaborative) -->
+  <vbox id="__addonRef__-collaboration-settings" flex="1" hidden="true">
+    <html:h3 data-l10n-id="pref-collaboration-title"></html:h3>
+
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-collaborationPollInterval"
+        data-l10n-id="pref-poll-interval"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-collaborationPollInterval"
+        type="number"
+        preference="collaborationPollInterval"
+      ></html:input>
+    </hbox>
+    <description id="__addonRef__-poll-interval-hint"></description>
+
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-supabaseActionsTable"
+        data-l10n-id="pref-actions-table"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-supabaseActionsTable"
+        type="text"
+        preference="supabaseActionsTable"
+      ></html:input>
+    </hbox>
+
+    <html:h4 data-l10n-id="pref-collection-names-title"></html:h4>
+
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-pendingCollectionName"
+        data-l10n-id="pref-pending-collection"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-pendingCollectionName"
+        type="text"
+        preference="pendingCollectionName"
+      ></html:input>
+    </hbox>
+
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-claimedCollectionName"
+        data-l10n-id="pref-claimed-collection"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-claimedCollectionName"
+        type="text"
+        preference="claimedCollectionName"
+      ></html:input>
+    </hbox>
+
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-reportedCollectionName"
+        data-l10n-id="pref-reported-collection"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-reportedCollectionName"
+        type="text"
+        preference="reportedCollectionName"
+      ></html:input>
+    </hbox>
+
+    <separator class="thin" />
+
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-defaultSharePassword"
+        data-l10n-id="pref-default-password"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-defaultSharePassword"
+        type="password"
+        preference="defaultSharePassword"
+      ></html:input>
+    </hbox>
+    <description id="__addonRef__-default-password-hint"></description>
+  </vbox>
 </groupbox>
 <vbox>
   <html:label

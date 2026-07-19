@@ -40,11 +40,9 @@ function initLocale() {
  * getString("addon-dynamic-example", { args: { count: 2 } }); // I have 2 apples
  * ```
  */
-function getString(localString: FluentMessageId): string;
-function getString(localString: FluentMessageId, branch: string): string;
-function getString(
-  localeString: FluentMessageId,
-  options: { branch?: string | undefined; args?: Record<string, unknown> },
+function getString(localString: FluentMessageId | string): string;
+function getString(localString: FluentMessageId | string, branch: string): string;
+function getString(localeString: FluentMessageId | string, options: { branch?: string | undefined; args?: Record<string, unknown> },
 ): string;
 function getString(...inputs: any[]) {
   if (inputs.length === 1) {
@@ -68,11 +66,7 @@ interface Pattern {
   }> | null;
 }
 
-function _getString(
-  localeString: FluentMessageId,
-  options: { branch?: string | undefined; args?: Record<string, unknown> } = {},
-): string {
-  const localStringWithPrefix = `${config.addonRef}-${localeString}`;
+function _getString(localeString: string, options: { branch?: string | undefined; args?: Record<string, unknown> } = {}): string { const prefix = `${config.addonRef}-`; const cleanKey = localeString.startsWith(prefix) ? localeString.slice(prefix.length) : localeString; const localStringWithPrefix = `${prefix}${cleanKey}`;
   const { branch, args } = options;
   const pattern = addon.data.locale?.current.formatMessagesSync([
     { id: localStringWithPrefix, args },

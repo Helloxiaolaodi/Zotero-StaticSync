@@ -19,6 +19,19 @@ declare namespace _ZoteroTypes {
       "copyShareUrl": boolean;
       "includeNotes": boolean;
       "statusField": string;
+      "exportScope": string;
+      "groupID": string;
+      "fixedShareSlug": string;
+      "syncProfile": string;
+      "collaborationPollInterval": number;
+      "supabaseActionsTable": string;
+      "defaultSharePassword": string;
+      "pendingCollectionName": string;
+      "claimedCollectionName": string;
+      "reportedCollectionName": string;
+      "lastSyncedShareSlug": string;
+      "lastSyncedLibraryID": string;
+      "lastSyncedCollectionKey": string;
     };
   }
 }
