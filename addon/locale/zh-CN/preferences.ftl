@@ -1,5 +1,19 @@
-pref-title = 插件模板设置示例
-pref-enable =
-    .label = 开启
-pref-input = 输入
+pref-title = StaticSync 设置
+pref-github-title = GitHub 发布配置
+pref-github-repo = GitHub 仓库
+pref-github-token = GitHub Token
+pref-github-branch = 分支
+pref-github-content-path = 内容目录
+pref-supabase-title = Supabase 分享配置
+pref-supabase-url = Supabase 地址
+pref-supabase-key = Supabase 服务密钥
+pref-supabase-table = 数据表名
+pref-share-base-url = 分享链接模板
+pref-share-base-url-help = 可以填写包含 {id} 的完整链接模板，或一个接受 ?id=... 参数的页面地址。
+pref-copy-share-url =
+    .label = 生成后自动复制分享链接到剪贴板
+pref-export-title = 导出选项
+pref-include-notes =
+    .label = 导出时包含子笔记内容
+pref-status-field-help = Collection 表示使用完整文件夹路径作为状态，Library 表示使用 Zotero 文库名称作为状态。
 pref-help = { $name } Build { $version } { $time }

@@ -1,24 +1,24 @@
 {
-  "name": "zotero-plugin-template",
+  "name": "zotero-staticsync",
   "type": "module",
   "version": "3.1.0",
-  "description": "Zotero Plugin Template",
+  "description": "Sync Zotero collections to static websites or Supabase-backed sharing endpoints.",
   "config": {
-    "addonName": "Zotero Plugin Template",
-    "addonID": "addontemplate@euclpts.com",
-    "addonRef": "addontemplate",
-    "addonInstance": "AddonTemplate",
-    "prefsPrefix": "extensions.zotero.addontemplate"
+    "addonName": "Zotero StaticSync",
+    "addonID": "staticsync@helloxiaolaodi.github.io",
+    "addonRef": "staticsync",
+    "addonInstance": "StaticSync",
+    "prefsPrefix": "extensions.zotero.staticsync"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/windingwind/zotero-plugin-template.git"
+    "url": "git+https://github.com/Helloxiaolaodi/Zotero-StaticSync.git"
   },
-  "author": "windingwind",
+  "author": "Helloxiaolaodi",
   "bugs": {
-    "url": "https://github.com/windingwind/zotero-plugin-template/issues"
+    "url": "https://github.com/Helloxiaolaodi/Zotero-StaticSync/issues"
   },
-  "homepage": "https://github.com/windingwind/zotero-plugin-template#readme",
+  "homepage": "https://github.com/Helloxiaolaodi/Zotero-StaticSync#readme",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "zotero-plugin serve",

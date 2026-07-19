@@ -1,5 +1,19 @@
-pref-title = Addon Template Example
-pref-enable =
-    .label = Enable
-pref-input = Input
+pref-title = StaticSync Settings
+pref-github-title = GitHub Publishing
+pref-github-repo = GitHub repository
+pref-github-token = GitHub token
+pref-github-branch = Branch
+pref-github-content-path = Content path
+pref-supabase-title = Supabase Sharing
+pref-supabase-url = Supabase URL
+pref-supabase-key = Supabase service key
+pref-supabase-table = Table name
+pref-share-base-url = Share URL template
+pref-share-base-url-help = Use a full URL with {id}, or a page URL that accepts ?id=...
+pref-copy-share-url =
+    .label = Copy the generated share URL to the clipboard
+pref-export-title = Export Options
+pref-include-notes =
+    .label = Include child notes in exported content
+pref-status-field-help = Collection uses the full collection path. Library uses the Zotero library name.
 pref-help = { $name } Build { $version } { $time }

@@ -4,26 +4,141 @@
 <groupbox
   onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window })"
 >
-  <label><html:h2 data-l10n-id="pref-title"></html:h2></label>
+  <html:h2 data-l10n-id="pref-title"></html:h2>
+
+  <hbox align="center">
+    <label value="Mode" />
+    <menulist id="zotero-prefpane-__addonRef__-mode" preference="mode">
+      <menupopup>
+        <menuitem value="github" label="GitHub" />
+        <menuitem value="supabase" label="Supabase" />
+      </menupopup>
+    </menulist>
+  </hbox>
+
+  <separator class="thin" />
+
+  <vbox id="__addonRef__-github-settings" flex="1">
+    <html:h3 data-l10n-id="pref-github-title"></html:h3>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-githubRepo"
+        data-l10n-id="pref-github-repo"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-githubRepo"
+        type="text"
+        preference="githubRepo"
+      ></html:input>
+    </hbox>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-githubToken"
+        data-l10n-id="pref-github-token"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-githubToken"
+        type="password"
+        preference="githubToken"
+      ></html:input>
+    </hbox>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-githubBranch"
+        data-l10n-id="pref-github-branch"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-githubBranch"
+        type="text"
+        preference="githubBranch"
+      ></html:input>
+    </hbox>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-githubContentPath"
+        data-l10n-id="pref-github-content-path"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-githubContentPath"
+        type="text"
+        preference="githubContentPath"
+      ></html:input>
+    </hbox>
+  </vbox>
+
+  <vbox id="__addonRef__-supabase-settings" flex="1" hidden="true">
+    <html:h3 data-l10n-id="pref-supabase-title"></html:h3>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-supabaseUrl"
+        data-l10n-id="pref-supabase-url"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-supabaseUrl"
+        type="text"
+        preference="supabaseUrl"
+      ></html:input>
+    </hbox>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-supabaseKey"
+        data-l10n-id="pref-supabase-key"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-supabaseKey"
+        type="password"
+        preference="supabaseKey"
+      ></html:input>
+    </hbox>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-supabaseTable"
+        data-l10n-id="pref-supabase-table"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-supabaseTable"
+        type="text"
+        preference="supabaseTable"
+      ></html:input>
+    </hbox>
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-shareBaseUrl"
+        data-l10n-id="pref-share-base-url"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-shareBaseUrl"
+        type="text"
+        preference="shareBaseUrl"
+      ></html:input>
+    </hbox>
+    <description id="__addonRef__-share-url-hint"></description>
+    <checkbox
+      id="zotero-prefpane-__addonRef__-copyShareUrl"
+      preference="copyShareUrl"
+      data-l10n-id="pref-copy-share-url"
+    />
+  </vbox>
+
+  <separator class="thin" />
+
+  <html:h3 data-l10n-id="pref-export-title"></html:h3>
   <checkbox
-    id="zotero-prefpane-__addonRef__-enable"
-    preference="enable"
-    data-l10n-id="pref-enable"
+    id="zotero-prefpane-__addonRef__-includeNotes"
+    preference="includeNotes"
+    data-l10n-id="pref-include-notes"
   />
-  <hbox>
-    <html:label
-      for="zotero-prefpane-__addonRef__-input"
-      data-l10n-id="pref-input"
-    ></html:label>
-    <html:input
-      type="text"
-      id="zotero-prefpane-__addonRef__-input"
-      preference="input"
-    ></html:input>
+
+  <hbox align="center">
+    <label value="Status Source" />
+    <menulist id="zotero-prefpane-__addonRef__-statusField" preference="statusField">
+      <menupopup>
+        <menuitem value="collection" label="Collection Path" />
+        <menuitem value="library" label="Library Name" />
+      </menupopup>
+    </menulist>
   </hbox>
-  <hbox class="virtualized-table-container" flex="1" height="300px">
-    <html:div id="__addonRef__-table-container" />
-  </hbox>
+  <description id="__addonRef__-status-hint"></description>
 </groupbox>
 <vbox>
   <html:label
