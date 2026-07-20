@@ -28,6 +28,12 @@ A Zotero plugin that exports Zotero collections to Supabase (structured JSON for
 - **No more Z Linter duplicate popups** — before adding a DOI-sourced item, the plugin checks Zotero for an existing item with the same DOI via `Zotero.Search` and skips the Translator import when a match already exists, avoiding the "no-item-duplication" popup from the Z Linter add-on.
 - **Batch and claimed-section DOI submit resolve metadata** — batch import and the claimed-section submit now resolve DOI → title/authors/publication/year via Crossref and display the full article card on the web immediately, with an undo button, identical to the to-read section's DOI submit.
 ### Phase 2.2 (bidirectional sync + bug fixes)
+- **Backup button** — top-right corner button opens a modal listing all actions (claim/undo/report/add/undo_add) with timestamps, who performed them (reporter name), and a CSV export.
+- **Sort control** — each bucket can be sorted by title (A-Z, default) or by publication year (newest first).
+- **Toast notifications** — every operation (claim, undo claim, report, undo report, add DOI, batch import, undo add) shows a success or failure toast that auto-dismisses, giving visual feedback and a sync buffer between web and Zotero.
+- **Undo button scoping fix** — DOI-added items only show the undo-add button in the To Read section, not in the Claimed section (which already has undo claim).
+- **Responsive undo claim** — undo claim now uses a delayed refetch (1.5s) instead of immediate refetch, so the server has time to process the action before the web reconciles, fixing the sluggish undo buttons.
+
 - **Bidirectional sync** — after processing pending web actions, the plugin runs `silentSyncBack()` to push the updated Zotero state back to Supabase, so both sides stay in sync without manual re-export. The web frontend also writes actions directly to Supabase via `applyActionToLiteratureData()` for instant UI feedback.
 - **No auto-created empty folders** — collaboration actions now use `findCollection()` instead of `findOrCreateCollection()`. The plugin will never create empty "To Read" / "Claimed" / "Reported" folders; it only moves items into existing ones.
 - **DOI dedup claims existing item** — when a DOI added from the web already exists in Zotero, the plugin claims the existing item (adds tags, moves to Claimed) instead of silently skipping it, fixing count mismatches.

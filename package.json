@@ -1,7 +1,7 @@
 {
   "name": "zotero-staticsync",
   "type": "module",
-  "version": "0.0.3",
+   "version": "0.0.5",
   "description": "Sync Zotero collections to static websites or Supabase-backed sharing endpoints.",
   "config": {
     "addonName": "Zotero StaticSync",
