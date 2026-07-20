@@ -93,7 +93,6 @@ export type FluentMessageId =
   | 'zotero-staticsync-pref-sync-profile-help'
   | 'zotero-staticsync-prefs-title'
   | 'zotero-staticsync-startup-finish'
-  | 'zotero-staticsync-supabase-password-prompt'
   | 'zotero-staticsync-sync-partial-failure'
   | 'zotero-staticsync-sync-progress-start'
   | 'zotero-staticsync-sync-success-github'

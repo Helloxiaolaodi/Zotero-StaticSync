@@ -9,7 +9,6 @@ zotero-staticsync-sync-partial-failure = 有 { $count } 条文献同步失败。
 zotero-staticsync-error-no-collection = 请先选中一个 Zotero 文件夹。
 zotero-staticsync-error-empty-collection = 当前文件夹中没有可导出的常规文献条目。
 zotero-staticsync-error-invalid-group-id = 无法解析该 Zotero 群组 ID。请在群组设置 URL 中确认正确的数字 ID。
-zotero-staticsync-supabase-password-prompt = 请输入这个分享集合的访问密码。留空表示公开访问。
 zotero-staticsync-pref-status-field-help = Collection 表示使用完整文件夹路径作为状态，Library 表示使用 Zotero 文库名称作为状态。
 zotero-staticsync-pref-share-base-url-help = 可填写包含 {id} 的完整链接模板，或一个接收 ?id=... 参数的页面地址。
 zotero-staticsync-pref-group-id-help = Zotero 群组设置 URL 中的数字 ID。留空则使用个人文库。

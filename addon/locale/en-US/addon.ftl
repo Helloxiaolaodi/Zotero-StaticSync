@@ -9,7 +9,6 @@ zotero-staticsync-sync-partial-failure = { $count } items failed to sync.
 zotero-staticsync-error-no-collection = Please select a Zotero collection first.
 zotero-staticsync-error-empty-collection = No regular Zotero items were found in this collection.
 zotero-staticsync-error-invalid-group-id = The Zotero Group ID could not be resolved. Check the ID in your group settings URL.
-zotero-staticsync-supabase-password-prompt = Enter a password for this shared collection. Leave it empty for public access.
 zotero-staticsync-pref-status-field-help = Collection uses the full collection path. Library uses the Zotero library name.
 zotero-staticsync-pref-share-base-url-help = Use a full URL with {id}, or a page URL that accepts ?id=...
 zotero-staticsync-pref-group-id-help = Numeric group ID shown in the Zotero group settings URL. Leave blank to use your personal library.

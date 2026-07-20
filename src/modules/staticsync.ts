@@ -359,7 +359,6 @@ export class StaticSync {
     colPathText: string,
     libName: string,
     libraryID: number,
-    password: string,
   ): Promise<string> {
     const supabaseUrl = getPref("supabaseUrl").trim().replace(/\/$/, "");
     const supabaseKey = getPref("supabaseKey").trim();
@@ -384,7 +383,7 @@ export class StaticSync {
       collection_path_text: colPathText,
       library_name: libName,
       library_id: libraryID,
-      password: password.trim() || getPref("defaultSharePassword").trim() || null,
+      password: getPref("defaultSharePassword").trim() || null,
       item_count: items.length,
       literature_data: items,
       status_source: getPref("statusField"),
@@ -462,7 +461,6 @@ export class StaticSync {
   // -- Main sync entry ---------------------------------------
   async syncCollection(
     collection?: Zotero.Collection,
-    options?: { password?: string },
   ): Promise<SyncSummary> {
     const { items, exportName, libName, colPath, colPathText } = await this.extractCollectionData(collection);
     const libraryID = this.resolveLibraryID();
@@ -473,7 +471,7 @@ export class StaticSync {
 
     const mode = getPref("mode");
     if (mode === "supabase") {
-      const shareUrl = await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libraryID, options?.password || "");
+      const shareUrl = await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libraryID);
       return { successCount: items.length, failureCount: 0, failures: [], shareUrl, exportName };
     }
 

@@ -23,26 +23,6 @@ function copyToClipboard(text: string) {
   helper.copyString(text);
 }
 
-async function requestPassword(
-  win: _ZoteroTypes.MainWindow,
-): Promise<string | undefined> {
-  const prompts = Services.prompt;
-  const input = { value: "" };
-  const checkState = { value: false };
-  const accepted = prompts.prompt(
-    win as unknown as mozIDOMWindowProxy,
-    "Zotero-StaticSync",
-    getString("zotero-staticsync-supabase-password-prompt"),
-    input,
-    "",
-    checkState,
-  );
-  if (!accepted) {
-    return undefined;
-  }
-  return input.value || "";
-}
-
 function formatFailureMessage(failures: string[]): string {
   return failures.slice(0, 5).join("\n");
 }
@@ -65,16 +45,6 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
     return;
   }
 
-  const mode = getPref("mode");
-  let password = "";
-  if (mode === "supabase") {
-    const value = await requestPassword(win);
-    if (value === undefined) {
-      return;
-    }
-    password = value;
-  }
-
   const progressLabel = getString("zotero-staticsync-sync-progress-start", {
     args: { collection: collection.name },
   });
@@ -90,7 +60,7 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
     .show();
 
   try {
-    const result = await staticSync.syncCollection(collection || undefined, { password });
+    const result = await staticSync.syncCollection(collection || undefined);
     if (!result.successCount && !result.failureCount) {
       progress.changeLine({
         progress: 100,
