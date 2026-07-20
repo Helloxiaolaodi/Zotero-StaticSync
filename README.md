@@ -19,6 +19,15 @@ A Zotero plugin that exports Zotero collections to Supabase (structured JSON for
 - **Collaboration workflow** — web-side actions (claim, report, add by DOI, undo claim, undo report, undo add) are applied to your Zotero library
 - **Export CSV** — export collection items to a local CSV file with customizable columns (default: sequence number + title)
 - **Public share frontend** — Next.js + Supabase share page with author formatting, status tabs, DOI links, and password gate
+### Phase 2.1 (subfolder grouping + bidirectional sync + UX fixes)
+- **Subfolder-aware web display** — when an exported folder contains subfolders (and nested sub-subfolders), the web page now distinguishes which folder each paper came from, grouped under a "Parent / Child" header. Papers are no longer dumped into the to-read bucket when they actually belong to a deeper folder. This is shown for both collaborative and non-collaborative collections.
+- **Three workflow tabs only in group/collaborative mode** — the 待阅读/已认领/已汇报 (to-read/claimed/reported) tabs appear only when the share is a collaborative group collection. For non-collaborative collections the page shows a single flat view grouped by subfolder path, with no tabs.
+- **Optimistic undo buttons** — claim and undo-claim now update the web UI immediately, so the button responds instantly instead of requiring a manual refresh or multiple clicks. On failure the change rolls back; a periodic refresh reconciles with the server.
+- **Bidirectional sync (web ↔ Zotero)** — web actions write straight to Supabase (`?direct=1` direct mode) and also enqueue an action row in `shared_collection_actions`. The Zotero plugin polls every 15s and applies pending actions locally, so changes flow both ways.
+- **DOI-added items get an undo button** — items added through the web (by DOI, batch, or from the claimed section) are flagged as `selfUploaded` and show an undo-add button, matching the to-read section's DOI submit.
+- **No more Z Linter duplicate popups** — before adding a DOI-sourced item, the plugin checks Zotero for an existing item with the same DOI via `Zotero.Search` and skips the Translator import when a match already exists, avoiding the "no-item-duplication" popup from the Z Linter add-on.
+- **Batch and claimed-section DOI submit resolve metadata** — batch import and the claimed-section submit now resolve DOI → title/authors/publication/year via Crossref and display the full article card on the web immediately, with an undo button, identical to the to-read section's DOI submit.
+- **Faster collaboration polling** — default poll interval lowered from 60s to 15s so web actions reach Zotero sooner.
 
 ## Installation
 
@@ -59,7 +68,7 @@ Run `doc/supabase-schema.sql` in your Supabase SQL Editor. It creates:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Poll interval | 60s | How often Zotero checks for pending actions from the web |
+| Poll interval | 15s | How often Zotero checks for pending actions from the web |
 | Actions table | `shared_collection_actions` | Supabase table for collaboration actions |
 | To Read collection | `To Read` | Zotero collection name for unclaimed items |
 | Claimed collection | `Claimed` | Zotero collection name for claimed items |
@@ -110,10 +119,28 @@ A companion Next.js frontend renders collection data from Supabase as a public w
 - Password gate for protected collections (bilingual)
 - **Collaboration mode**: claim, report, add-by-DOI, undo claim, undo report, and undo add buttons with presenter name/date forms
 - **Instant web updates**: claim/report/add-by-DOI actions are immediately written to `literature_data` in Supabase (requires `SUPABASE_SERVICE_ROLE_KEY` environment variable). Add-by-DOI resolves article metadata via Crossref API so new items show title/authors immediately on the web.
+- **Subfolder grouping**: papers from nested subfolders are grouped under their full folder path header ("Parent / Child / Leaf") instead of being flattened into the to-read bucket
+- **Tab visibility by mode**: workflow tabs (to-read/claimed/reported) are shown only for collaborative group collections; non-collaborative collections show a single grouped view
+- **Optimistic claim/undo**: claim and undo-claim update the UI instantly with rollback on failure
+- **Undo on all web-added items**: DOI-added, batch-imported, and claimed-section items all show an undo-add button
+- **DOI deduplication**: web and plugin both skip DOI duplicates (Crossref fetch / Zotero import) to avoid duplicate-item popups
 - Improved categorization: checks readingStatus, collectionPath, collectionName, and tags in priority order; supports both Chinese and English collection names
 - **Tag-based auto-transition**: items with `claim_date:` or `report-date:` tags whose date has passed are automatically promoted from "claimed" to "reported"
 - **Supabase Realtime**: web frontend subscribes to `shared_collections` changes via WebSocket for instant data refresh
 - **Undo report**: reported items can be moved back to "claimed" via an undo report button
+## Cloudflare Pages API (direct mode)
+
+For web pages served through Cloudflare Pages, the `functions/api/zotero-hugo/[[path]].js` worker provides a direct mode. The web UI appends `?direct=1` to its calls; the worker then reads and writes the Supabase `literature_data` JSON directly for instant feedback, and also inserts a row into `shared_collection_actions` so the Zotero plugin picks the action up on its next poll.
+
+Required Cloudflare environment variables:
+
+| Variable | Description |
+|---------|-------------|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (or `SUPABASE_KEY`) for direct read/write access |
+| `SUPABASE_SHARE_SLUG` | The share `slug` identifying which `shared_collections` row to operate on |
+
+In direct mode the worker returns `is_collaborative` and `collection_path_text` alongside the items, which the web UI uses to decide whether to render tabs and how to group papers by subfolder.
 
 ## Build from source
 

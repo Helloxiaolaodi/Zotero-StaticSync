@@ -22,6 +22,7 @@ export interface StaticSyncItem {
   collectionPath: string[];
   collectionPathText: string;
   tags: string[];
+  selfUploaded?: boolean;
   note?: string;
 }
 
@@ -178,6 +179,7 @@ export class StaticSync {
       return [first, last].filter(Boolean).join(" ").trim();
     }).filter(Boolean);
     const tags = item.getTags().map((t) => t.tag).filter(Boolean);
+    const selfUploaded = tags.includes("external-claim");
     const note = includeNotes ? await readItemNote(item) : "";
     const title = item.getField("title") || `Untitled-${item.key}`;
     const abstractNote = item.getField("abstractNote") || "";
@@ -203,6 +205,7 @@ export class StaticSync {
       collectionPath,
       collectionPathText,
       tags,
+      selfUploaded,
       note: note || undefined,
     };
   }

@@ -8,7 +8,7 @@ pref("statusField", "collection");
 pref("groupID", "");
 pref("fixedShareSlug", "");
 pref("syncProfile", "static");
-pref("collaborationPollInterval", 60);
+pref("collaborationPollInterval", 15);
 pref("supabaseActionsTable", "shared_collection_actions");
 pref("defaultSharePassword", "");
 pref("pendingCollectionName", "To Read");

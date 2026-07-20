@@ -17,6 +17,7 @@ interface PendingAction {
 export class CollaborationManager {
   private polling = false;
   private timer: ReturnType<typeof setInterval> | null = null;
+  private immediatePollScheduled = false;
 
   private buildRestURL(): string {
     const url = getPref("supabaseUrl").trim().replace(/\/$/, "");
@@ -136,6 +137,16 @@ export class CollaborationManager {
       }
       case "add_by_doi": {
         if (!action.doi) break;
+        // Pre-check: skip if a DOI-matching item already exists
+        const libID = Zotero.Libraries.userLibraryID;
+        const s = new Zotero.Search();
+        s.addCondition("libraryID", "is", libID);
+        s.addCondition("DOI", "is", action.doi);
+        const existingIDs = await s.search();
+        if (existingIDs.length > 0) {
+          Zotero.debug(`Collaboration: skipping add_by_doi - DOI ${action.doi} already exists`);
+          break;
+        }
         const translator = Zotero.Translate;
         const translate = new translator("search");
         translate.setTranslator("11645bd4-0420-45e1-95d8-b6e2951bcd33"); // DOI
@@ -153,11 +164,15 @@ export class CollaborationManager {
       }
       case "undo_add": {
         if (!action.item_key) break;
-        const item = await this.findItemByKey(action.item_key);
-        if (!item) break;
-        // Move to trash
-        item.deleted = true;
-        await item.saveTx();
+        try {
+          const item = await this.findItemByKey(action.item_key);
+          if (!item) break;
+          // Move to trash
+          item.deleted = true;
+          await item.saveTx();
+        } catch (e) {
+          Zotero.debug(`Collaboration: undo_add failed for ${action.item_key}, item may already be deleted: ${e}`);
+        }
         break;
       }
       default:
@@ -197,6 +212,16 @@ export class CollaborationManager {
     } catch (e) {
       Zotero.debug(`Collaboration: poll error: ${e}`);
     }
+  }
+
+  /** Schedule an immediate poll after a brief delay, debouncing repeat calls. */
+  scheduleImmediatePoll(): void {
+    if (this.immediatePollScheduled) return;
+    this.immediatePollScheduled = true;
+    setTimeout(() => {
+      this.immediatePollScheduled = false;
+      void this.pollAndProcess();
+    }, 2000);
   }
 
   start(): void {
