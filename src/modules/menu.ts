@@ -6,12 +6,19 @@ import { handleExportCsv } from "./csvexport";
 const MENU_ID = "zotero-collectionmenu-staticsync";
 const EXPORT_CSV_MENU_ID = "zotero-collectionmenu-staticsync-exportcsv";
 
+/**
+ * Find all collection tree context menu popups in the document.
+ * Zotero 7 uses different popup IDs depending on the library type
+ * and UI area (sidebar vs. content pane).
+ */
 function getCollectionMenuPopups(win: _ZoteroTypes.MainWindow): XUL.MenuPopup[] {
   const popups: XUL.MenuPopup[] = [];
-  // Zotero 7+ uses zotero-collectionmenu for the collection tree context menu
   const ids = [
     "zotero-collectionmenu",
     "zotero-collections-tree-context-menu",
+    "zotero-collectionmenu-panel",
+    "zotero-collection-context-menu",
+    "zotero-itemmenu-collection",
   ];
   for (const id of ids) {
     const el = win.document.getElementById(id) as XUL.MenuPopup | null;
@@ -19,6 +26,21 @@ function getCollectionMenuPopups(win: _ZoteroTypes.MainWindow): XUL.MenuPopup[] 
       popups.push(el);
     }
   }
+
+  // Fallback: scan all menupopup elements whose id contains "collection" or "context"
+  if (!popups.length) {
+    const allPopups = win.document.querySelectorAll("menupopup[id]");
+    for (const p of Array.from(allPopups)) {
+      const id = (p as XUL.MenuPopup).id || "";
+      if (
+        (id.includes("collection") || id.includes("context")) &&
+        !popups.includes(p as XUL.MenuPopup)
+      ) {
+        popups.push(p as XUL.MenuPopup);
+      }
+    }
+  }
+
   return popups;
 }
 
@@ -119,6 +141,10 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
   }
 }
 
+/**
+ * Lazily register menu items: wait for popupshowing on any menupopup
+ * that looks like a collection context menu, then inject items.
+ */
 export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
   // Prevent duplicate registration across multiple windows/reloads
   if (win.document.getElementById(MENU_ID)) {
@@ -126,8 +152,33 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
   }
 
   const popups = getCollectionMenuPopups(win);
-  if (!popups.length) return;
+  if (!popups.length) {
+    // If no popup found statically, attach a global popupshowing listener
+    // that watches for collection-related popups dynamically.
+    const dynamicHandler = (event: Event) => {
+      const popup = event.target as XUL.MenuPopup | null;
+      if (!popup) return;
+      const id = popup.id || "";
+      // Only react to collection-related popups
+      if (!id.includes("collection") && !id.includes("context")) return;
+      // Only inject once per popup
+      if (popup.querySelector(`#${MENU_ID}`)) return;
 
+      injectMenuItems(win, popup);
+    };
+    win.document.addEventListener("popupshowing", dynamicHandler);
+    // Store handler so it can be removed on unload if needed
+    (win as any)._zoteroStaticSyncPopupHandler = dynamicHandler;
+    return;
+  }
+
+  // Inject into all found popups
+  for (const popup of popups) {
+    injectMenuItems(win, popup);
+  }
+}
+
+function injectMenuItems(win: _ZoteroTypes.MainWindow, popup: XUL.MenuPopup) {
   // Sync Collection menu item
   const menuItem = win.document.createXULElement("menuitem");
   menuItem.id = MENU_ID;
@@ -151,34 +202,9 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
     csvMenuItem.setAttribute("hidden", hidden);
   };
 
-  // Add menu items to ALL found popup menus (personal + group collections)
-  for (const popup of popups) {
-    popup.appendChild(menuItem);
-    popup.appendChild(csvMenuItem);
-    popup.addEventListener("popupshowing", updateVisibility);
-    break; // only append the actual elements to the first popup; clone for others
-  }
-
-  // Clone items for additional popups (if both context menu and panel exist)
-  for (let i = 1; i < popups.length; i++) {
-    const syncClone = win.document.createXULElement("menuitem");
-    syncClone.id = MENU_ID + "-" + i;
-    syncClone.setAttribute("label", getString("zotero-staticsync-collection-menu-label"));
-    syncClone.addEventListener("command", () => {
-      void handleSyncCommand(win);
-    });
-
-    const csvClone = win.document.createXULElement("menuitem");
-    csvClone.id = EXPORT_CSV_MENU_ID + "-" + i;
-    csvClone.setAttribute("label", getString("zotero-staticsync-csv-menu-label"));
-    csvClone.addEventListener("command", () => {
-      void handleExportCsv(win);
-    });
-
-    popups[i].appendChild(syncClone);
-    popups[i].appendChild(csvClone);
-    popups[i].addEventListener("popupshowing", updateVisibility);
-  }
+  popup.appendChild(menuItem);
+  popup.appendChild(csvMenuItem);
+  popup.addEventListener("popupshowing", updateVisibility);
 }
 
 export function unregisterCollectionMenu(win: Window) {
@@ -189,5 +215,11 @@ export function unregisterCollectionMenu(win: Window) {
   for (let i = 0; i < 10; i++) {
     win.document.getElementById(`${MENU_ID}-${i}`)?.remove();
     win.document.getElementById(`${EXPORT_CSV_MENU_ID}-${i}`)?.remove();
+  }
+  // Remove dynamic handler if attached
+  const dynamicHandler = (win as any)._zoteroStaticSyncPopupHandler;
+  if (dynamicHandler) {
+    win.document.removeEventListener("popupshowing", dynamicHandler);
+    delete (win as any)._zoteroStaticSyncPopupHandler;
   }
 }

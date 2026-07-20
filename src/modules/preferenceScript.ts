@@ -1,6 +1,6 @@
 import { config } from "../../package.json";
 import { getString } from "../utils/locale";
-import { getPref } from "../utils/prefs";
+import { getPref, setPref } from "../utils/prefs";
 
 type SyncProfile = "static" | "collaborative";
 
@@ -120,7 +120,7 @@ function saveCsvCheckboxes() {
     }
   }
   const value = checked.length > 0 ? checked.join(",") : "title";
-  Zotero.Prefs.set(`extensions.${config.prefsPrefix}.csvColumns`, value, true);
+  setPref("csvColumns", value);
 }
 
 export async function registerPrefsScripts(_window: Window) {
