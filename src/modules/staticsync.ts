@@ -361,19 +361,47 @@ export class StaticSync {
     return this.buildSupabaseShareURL(identifier);
   }
 
-  // -- Main sync entry ---------------------------------------
-  async syncCollection(
-    collection?: Zotero.Collection,
-  ): Promise<SyncSummary> {
-    const { items, exportName, libName, colPath, colPathText } = await this.extractCollectionData(collection);
-    const libraryID = this.resolveLibraryID();
+ // -- Main sync entry ---------------------------------------
+ async syncCollection(
+   collection?: Zotero.Collection,
+ ): Promise<SyncSummary> {
+   const { items, exportName, libName, colPath, colPathText } = await this.extractCollectionData(collection);
+   const libraryID = this.resolveLibraryID();
 
-    if (!items.length) {
-      return { successCount: 0, failureCount: 0, failures: [], exportName };
+   if (!items.length) {
+     return { successCount: 0, failureCount: 0, failures: [], exportName };
+   }
+
+   const shareUrl = await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libraryID);
+   return { successCount: items.length, failureCount: 0, failures: [], shareUrl, exportName };
+ }
+
+  /**
+   * Silent push-back for bidirectional sync. Re-extracts the last-synced
+   * collection and pushes it to Supabase without any UI alerts.
+   */
+  async silentSyncBack(): Promise<void> {
+    const libID = Number(getPref("lastSyncedLibraryID"));
+    if (!libID) {
+      Zotero.debug("StaticSync: silentSyncBack skipped – no lastSyncedLibraryID");
+      return;
     }
 
-    const shareUrl = await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libraryID);
-    return { successCount: items.length, failureCount: 0, failures: [], shareUrl, exportName };
+    const colKey = getPref("lastSyncedCollectionKey").trim();
+    let collection: Zotero.Collection | undefined;
+    if (colKey) {
+      const col = Zotero.Collections.getByLibraryAndKey(libID, colKey);
+      collection = (col && (col as Zotero.Collection).id ? (col as Zotero.Collection) : undefined);
+    }
+
+    const { items, exportName, libName, colPath, colPathText } = await this.extractCollectionData(collection);
+    if (!items.length) {
+      Zotero.debug("StaticSync: silentSyncBack skipped – no items");
+      return;
+    }
+
+    await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libID);
+    Zotero.debug("StaticSync: silent sync-back complete");
   }
 }
 

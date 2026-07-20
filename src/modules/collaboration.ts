@@ -31,7 +31,9 @@ export class CollaborationManager {
   private async fetchPendingActions(): Promise<PendingAction[]> {
     const key = getPref("supabaseKey").trim();
     const base = this.buildRestURL();
-    const url = `${base}?processed=eq.false&order=created_at.asc&limit=20`;
+    const latestSlug = getPref("lastSyncedShareSlug").trim();
+    const filterAppend = latestSlug ? ('&source_slug=eq.' + encodeURIComponent(latestSlug)) : '';
+    const url = `${base}?processed=eq.false${filterAppend}&order=created_at.asc&limit=20`;
     const resp = await fetch(url, {
       headers: {
         apikey: key,
@@ -80,9 +82,9 @@ export class CollaborationManager {
         if (action.reporter_name) item.addTag(`claimed_by:${action.reporter_name}`);
         if (action.report_date) item.addTag(`claim_date:${action.report_date}`);
         await item.saveTx();
-        // Move to Claimed collection
-        const claimedCol = await this.findOrCreateCollection(claimedName);
-        if (claimedCol) claimedCol.addItem(item.id);
+       // Move to Claimed collection
+        const claimedCol = await this.findCollection(claimedName);
+       if (claimedCol) claimedCol.addItem(item.id);
         break;
       }
       case "undo_claim": {
@@ -100,9 +102,9 @@ export class CollaborationManager {
           }
         }
         await item.saveTx();
-        // Move back to pending
-        const pendingCol = await this.findOrCreateCollection(pendingName);
-        if (pendingCol) pendingCol.addItem(item.id);
+       // Move back to pending
+        const pendingCol = await this.findCollection(pendingName);
+       if (pendingCol) pendingCol.addItem(item.id);
         break;
       }
       case "undo_report": {
@@ -118,9 +120,9 @@ export class CollaborationManager {
           }
         }
         await item.saveTx();
-        // Move back to claimed collection
-        const claimedCol = await this.findOrCreateCollection(claimedName);
-        if (claimedCol) claimedCol.addItem(item.id);
+       // Move back to claimed collection
+        const claimedCol = await this.findCollection(claimedName);
+       if (claimedCol) claimedCol.addItem(item.id);
         break;
       }
       case "report": {
@@ -130,38 +132,58 @@ export class CollaborationManager {
         item.addTag("auto_reported");
         if (action.reporter_name) item.addTag(`reported_by:${action.reporter_name}`);
         if (action.report_date) item.addTag(`report_date:${action.report_date}`);
-        await item.saveTx();
-        const reportedCol = await this.findOrCreateCollection(reportedName);
-        if (reportedCol) reportedCol.addItem(item.id);
+       await item.saveTx();
+       const reportedCol = await this.findCollection(reportedName);
+       if (reportedCol) reportedCol.addItem(item.id);
         break;
       }
-      case "add_by_doi": {
-        if (!action.doi) break;
-        // Pre-check: skip if a DOI-matching item already exists
-        const libID = Zotero.Libraries.userLibraryID;
-        const s = new Zotero.Search();
-        s.addCondition("libraryID", "is", libID);
-        s.addCondition("DOI", "is", action.doi);
-        const existingIDs = await s.search();
-        if (existingIDs.length > 0) {
-          Zotero.debug(`Collaboration: skipping add_by_doi - DOI ${action.doi} already exists`);
-          break;
-        }
-        const translator = Zotero.Translate;
-        const translate = new translator("search");
-        translate.setTranslator("11645bd4-0420-45e1-95d8-b6e2951bcd33"); // DOI
-        translate.setSearch({ itemType: "journalArticle", DOI: action.doi });
-        const translators = await translate.getTranslators();
-        if (translators.length) translate.setTranslator(translators[0].translatorID);
-        const newItems = await translate.translate({ libraryID: Zotero.Libraries.userLibraryID, saveAttachments: false });
-        if (newItems.length) {
-          const newItem = newItems[0];
-          if (action.reporter_name) newItem.addTag(`added_by:${action.reporter_name}`);
-          if (action.report_date) newItem.addTag(`added_date:${action.report_date}`);
-          await newItem.saveTx();
-        }
-        break;
-      }
+     case "add_by_doi": {
+       if (!action.doi) break;
+        const libID = Number(getPref("lastSyncedLibraryID")) || Zotero.Libraries.userLibraryID;
+
+        // Pre-check: if a DOI-matching item already exists, claim it instead of adding duplicate
+       const s = new Zotero.Search();
+       s.addCondition("libraryID", "is", libID);
+       s.addCondition("DOI", "is", action.doi);
+       const existingIDs = await s.search();
+       if (existingIDs.length > 0) {
+          Zotero.debug(`Collaboration: DOI ${action.doi} already exists - claiming existing item instead of adding duplicate`);
+          for (const id of existingIDs) {
+            const existingItem = await Zotero.Items.getAsync(id);
+            if (!existingItem || !existingItem.isRegularItem()) continue;
+            existingItem.addTag("auto_claimed");
+            if (action.reporter_name) existingItem.addTag(`claimed_by:${action.reporter_name}`);
+            if (action.report_date) existingItem.addTag(`claim_date:${action.report_date}`);
+            await existingItem.saveTx();
+            const claimedCol = await this.findCollection(claimedName);
+            if (claimedCol) claimedCol.addItem(existingItem.id);
+          }
+         break;
+       }
+
+       const translator = Zotero.Translate;
+       const translate = new translator("search");
+       translate.setTranslator("11645bd4-0420-45e1-95d8-b6e2951bcd33"); // DOI
+       translate.setSearch({ itemType: "journalArticle", DOI: action.doi });
+       const translators = await translate.getTranslators();
+       if (translators.length) translate.setTranslator(translators[0].translatorID);
+        const newItems = await translate.translate({ libraryID: libID, saveAttachments: false });
+       if (newItems.length) {
+         const newItem = newItems[0];
+         if (action.reporter_name) newItem.addTag(`added_by:${action.reporter_name}`);
+         if (action.report_date) newItem.addTag(`added_date:${action.report_date}`);
+          // If reporter_name is present, also claim the newly added item
+          if (action.reporter_name) {
+            newItem.addTag("auto_claimed");
+            newItem.addTag(`claimed_by:${action.reporter_name}`);
+            if (action.report_date) newItem.addTag(`claim_date:${action.report_date}`);
+            const claimedCol = await this.findCollection(claimedName);
+            if (claimedCol) claimedCol.addItem(newItem.id);
+          }
+         await newItem.saveTx();
+       }
+       break;
+     }
       case "undo_add": {
         if (!action.item_key) break;
         try {
@@ -194,25 +216,50 @@ export class CollaborationManager {
     await newCol.saveTx();
     return newCol;
   }
-
-  /** Main poll loop. */
-  async pollAndProcess(): Promise<void> {
-    try {
-      const actions = await this.fetchPendingActions();
-      if (!actions.length) return;
-      Zotero.debug(`Collaboration: found ${actions.length} pending action(s)`);
-      for (const action of actions) {
-        try {
-          await this.processAction(action);
-          await this.markProcessed(action);
-        } catch (e) {
-          Zotero.debug(`Collaboration: error processing action ${action.id}: ${e}`);
-        }
-      }
-    } catch (e) {
-      Zotero.debug(`Collaboration: poll error: ${e}`);
+  /**
+   * Look up an existing collection by name without creating one.
+   * Collaboration buckets (To Read / Claimed / Reported) must be created by
+   * the user in Zotero; the plugin never auto-creates empty folders.
+   */
+  private async findCollection(name: string): Promise<Zotero.Collection | null> {
+    const libID = Number(getPref("lastSyncedLibraryID")) || Zotero.Libraries.userLibraryID;
+    const cols = Zotero.Collections.getByLibrary(libID) as Zotero.Collection[];
+    const existing = cols.filter((c) => !c.deleted).find((c) => c.name === name);
+    if (!existing) {
+      Zotero.debug(`Collaboration: collection "${name}" not found in library ${libID}; skipping (will not auto-create an empty folder)`);
     }
+    return existing ?? null;
   }
+
+ /** Main poll loop. */
+ async pollAndProcess(): Promise<void> {
+    let processedCount = 0;
+   try {
+     const actions = await this.fetchPendingActions();
+     if (!actions.length) return;
+     Zotero.debug(`Collaboration: found ${actions.length} pending action(s)`);
+     for (const action of actions) {
+       try {
+         await this.processAction(action);
+         await this.markProcessed(action);
+          processedCount++;
+       } catch (e) {
+         Zotero.debug(`Collaboration: error processing action ${action.id}: ${e}`);
+       }
+     }
+   } catch (e) {
+     Zotero.debug(`Collaboration: poll error: ${e}`);
+   }
+
+    // Push updated state back to Supabase after processing web actions
+    if (processedCount > 0) {
+      try {
+        await staticSync.silentSyncBack();
+      } catch (e) {
+        Zotero.debug(`Collaboration: silent sync-back failed: ${e}`);
+      }
+    }
+ }
 
   /** Schedule an immediate poll after a brief delay, debouncing repeat calls. */
   scheduleImmediatePoll(): void {

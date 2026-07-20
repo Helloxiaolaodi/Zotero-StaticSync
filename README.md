@@ -1,4 +1,4 @@
-# Zotero-StaticSync
+﻿# Zotero-StaticSync
 
 A Zotero plugin that exports Zotero collections to Supabase (structured JSON for share links), with an optional collaborative web-to-Zotero bidirectional sync workflow.
 
@@ -27,7 +27,13 @@ A Zotero plugin that exports Zotero collections to Supabase (structured JSON for
 - **DOI-added items get an undo button** — items added through the web (by DOI, batch, or from the claimed section) are flagged as `selfUploaded` and show an undo-add button, matching the to-read section's DOI submit.
 - **No more Z Linter duplicate popups** — before adding a DOI-sourced item, the plugin checks Zotero for an existing item with the same DOI via `Zotero.Search` and skips the Translator import when a match already exists, avoiding the "no-item-duplication" popup from the Z Linter add-on.
 - **Batch and claimed-section DOI submit resolve metadata** — batch import and the claimed-section submit now resolve DOI → title/authors/publication/year via Crossref and display the full article card on the web immediately, with an undo button, identical to the to-read section's DOI submit.
-- **Faster collaboration polling** — default poll interval lowered from 60s to 15s so web actions reach Zotero sooner.
+### Phase 2.2 (bidirectional sync + bug fixes)
+- **Bidirectional sync** — after processing pending web actions, the plugin runs `silentSyncBack()` to push the updated Zotero state back to Supabase, so both sides stay in sync without manual re-export. The web frontend also writes actions directly to Supabase via `applyActionToLiteratureData()` for instant UI feedback.
+- **No auto-created empty folders** — collaboration actions now use `findCollection()` instead of `findOrCreateCollection()`. The plugin will never create empty "To Read" / "Claimed" / "Reported" folders; it only moves items into existing ones.
+- **DOI dedup claims existing item** — when a DOI added from the web already exists in Zotero, the plugin claims the existing item (adds tags, moves to Claimed) instead of silently skipping it, fixing count mismatches.
+- **Undo button for DOI-added items** — `resolveDoiToItem()` always adds an `added_by:web` tag, so the undo button appears for all web-added items.
+- **Batch submit resolves metadata** — after batch DOI import, `refetchCollection()` is called so DOI strings are immediately replaced with article titles and authors.
+- **Faster polling** — default poll interval is 15s. After processing actions, the plugin pushes updated state back via `silentSyncBack()`.
 
 ## Installation
 
@@ -119,6 +125,7 @@ A companion Next.js frontend renders collection data from Supabase as a public w
 - Password gate for protected collections (bilingual)
 - **Collaboration mode**: claim, report, add-by-DOI, undo claim, undo report, and undo add buttons with presenter name/date forms
 - **Instant web updates**: claim/report/add-by-DOI actions are immediately written to `literature_data` in Supabase (requires `SUPABASE_SERVICE_ROLE_KEY` environment variable). Add-by-DOI resolves article metadata via Crossref API so new items show title/authors immediately on the web.
+- **Bidirectional sync**: web actions are applied immediately in Supabase; the Zotero plugin polls every 15s, applies pending actions locally, then pushes the updated collection state back to Supabase via `silentSyncBack()`, so both sides stay in sync without manual re-export
 - **Subfolder grouping**: papers from nested subfolders are grouped under their full folder path header ("Parent / Child / Leaf") instead of being flattened into the to-read bucket
 - **Tab visibility by mode**: workflow tabs (to-read/claimed/reported) are shown only for collaborative group collections; non-collaborative collections show a single grouped view
 - **Optimistic claim/undo**: claim and undo-claim update the UI instantly with rollback on failure
