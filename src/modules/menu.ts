@@ -148,9 +148,32 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
 
   popup.appendChild(menuItem);
   popup.appendChild(csvMenuItem);
+
+  // Also register in the Zotero 7+ collection menu panel (for groups/libraries)
+  const menuPanel = win.document.getElementById("zotero-collectionmenu");
+  if (menuPanel && menuPanel !== popup) {
+    const syncItemGroup = win.document.createXULElement("menuitem");
+    syncItemGroup.id = MENU_ID + "-group";
+    syncItemGroup.setAttribute("label", getString("zotero-staticsync-collection-menu-label"));
+    syncItemGroup.addEventListener("command", () => {
+      void handleSyncCommand(win);
+    });
+
+    const csvItemGroup = win.document.createXULElement("menuitem");
+    csvItemGroup.id = EXPORT_CSV_MENU_ID + "-group";
+    csvItemGroup.setAttribute("label", getString("zotero-staticsync-csv-menu-label"));
+    csvItemGroup.addEventListener("command", () => {
+      void handleExportCsv(win);
+    });
+
+    menuPanel.appendChild(syncItemGroup);
+    menuPanel.appendChild(csvItemGroup);
+  }
 }
 
 export function unregisterCollectionMenu(win: Window) {
   win.document.getElementById(MENU_ID)?.remove();
   win.document.getElementById(EXPORT_CSV_MENU_ID)?.remove();
+  win.document.getElementById(MENU_ID + "-group")?.remove();
+  win.document.getElementById(EXPORT_CSV_MENU_ID + "-group")?.remove();
 }

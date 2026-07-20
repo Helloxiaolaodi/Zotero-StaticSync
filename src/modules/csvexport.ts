@@ -89,15 +89,28 @@ async function pickSavePath(
   win: _ZoteroTypes.MainWindow,
   defaultName: string,
 ): Promise<string | false> {
+  // Zotero 7+ uses BrowsingContext for nsIFilePicker.init
+  // Try modern approach first (BrowsingContext), fall back to window
   const fp = Cc[
     "@mozilla.org/filepicker;1"
   ].createInstance(Ci.nsIFilePicker);
-  // Zotero 7 uses BrowsingContext; cast to bypass type mismatch
-  (fp as any).init(
-    win,
-    getString("zotero-staticsync-csv-export-progress"),
-    Ci.nsIFilePicker.modeSave,
-  );
+
+  try {
+    // Zotero 7+ (Firefox 115 ESR+): first arg is BrowsingContext
+    (fp as any).init(
+      (win as any).browsingContext ?? (win as any).docShell,
+      getString("zotero-staticsync-csv-export-progress"),
+      Ci.nsIFilePicker.modeSave,
+    );
+  } catch {
+    // Fallback for older Zotero: use Services.wm to get a proper parent window
+    const parentWin = Services.wm.getMostRecentWindow("");
+    (fp as any).init(
+      parentWin,
+      getString("zotero-staticsync-csv-export-progress"),
+      Ci.nsIFilePicker.modeSave,
+    );
+  }
   fp.appendFilter("CSV Files (*.csv)", "*.csv");
   fp.appendFilter("All Files (*.*)", "*.*");
   fp.defaultString = defaultName;
