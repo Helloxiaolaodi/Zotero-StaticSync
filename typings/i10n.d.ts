@@ -14,7 +14,6 @@ export type FluentMessageId =
   | 'pref-collaboration-title'
   | 'pref-collection-names-title'
   | 'pref-copy-share-url'
-  | 'pref-csv-columns'
   | 'pref-csv-columns-help'
   | 'pref-csv-title'
   | 'pref-default-password'

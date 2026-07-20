@@ -68,7 +68,7 @@ Run `doc/supabase-schema.sql` in your Supabase SQL Editor. It creates:
 
 ### CSV Export
 
-Available column keys: `key`, `itemType`, `title`, `authors`, `publicationTitle`, `year`, `date`, `doi`, `url`, `abstractNote`, `tags`, `collectionName`, `libraryName`. The sequence number column is always included as the first column.
+Column selection uses checkboxes in the preferences panel. Available columns: Key, Item Type, Title, Authors, Publication Title, Year, Date, DOI, URL, Abstract Note, Tags, Collection Name, Library Name. The sequence number column is always included as the first column.
 
 ## Usage
 
@@ -109,7 +109,7 @@ A companion Next.js frontend renders collection data from Supabase as a public w
 - Line-clamped titles
 - Password gate for protected collections (bilingual)
 - **Collaboration mode**: claim, report, add-by-DOI, undo claim, undo report, and undo add buttons with presenter name/date forms
-- **Instant web updates**: claim/report actions are immediately written to `literature_data` in Supabase (requires `SUPABASE_SERVICE_ROLE_KEY` environment variable)
+- **Instant web updates**: claim/report/add-by-DOI actions are immediately written to `literature_data` in Supabase (requires `SUPABASE_SERVICE_ROLE_KEY` environment variable). Add-by-DOI resolves article metadata via Crossref API so new items show title/authors immediately on the web.
 - Improved categorization: checks readingStatus, collectionPath, collectionName, and tags in priority order; supports both Chinese and English collection names
 - **Tag-based auto-transition**: items with `claim_date:` or `report-date:` tags whose date has passed are automatically promoted from "claimed" to "reported"
 - **Supabase Realtime**: web frontend subscribes to `shared_collections` changes via WebSocket for instant data refresh

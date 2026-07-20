@@ -158,18 +158,22 @@
   <separator class="thin" />
 
   <html:h3 data-l10n-id="pref-csv-title"></html:h3>
-  <hbox align="center">
-    <html:label
-      for="zotero-prefpane-__addonRef__-csvColumns"
-      data-l10n-id="pref-csv-columns"
-    ></html:label>
-    <html:input
-      id="zotero-prefpane-__addonRef__-csvColumns"
-      type="text"
-      preference="csvColumns"
-    ></html:input>
-  </hbox>
   <description id="__addonRef__-csv-columns-hint"></description>
+  <vbox id="__addonRef__-csv-columns-box" style="margin-left: 8px;">
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-key" label="Key" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-itemType" label="Item Type" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-title" label="Title" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-authors" label="Authors" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-publicationTitle" label="Publication Title" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-year" label="Year" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-date" label="Date" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-doi" label="DOI" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-url" label="URL" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-abstractNote" label="Abstract Note" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-tags" label="Tags" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-collectionName" label="Collection Name" />
+    <checkbox id="zotero-prefpane-__addonRef__-csvCol-libraryName" label="Library Name" />
+  </vbox>
 
   <separator class="thin" />
 

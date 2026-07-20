@@ -34,6 +34,5 @@ pref-reported-collection = 已汇报文件夹
 pref-default-password = 默认分享密码
 pref-default-password-help = 新建分享时预填的访问密码。每次同步可单独覆写。留空表示公开访问。
 pref-csv-title = CSV 导出
-pref-csv-columns = CSV 列
-pref-csv-columns-help = 逗号分隔的列键名。可用：key, itemType, title, authors, publicationTitle, year, date, doi, url, abstractNote, tags, collectionName, libraryName。默认：title
+pref-csv-columns-help = 选择 CSV 导出中包含的列。
 pref-help = { $name } Build { $version } { $time }

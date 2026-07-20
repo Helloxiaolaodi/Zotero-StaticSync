@@ -96,10 +96,41 @@ function updateStaticText() {
   }
 }
 
+const CSV_COLUMN_KEYS = [
+  "key", "itemType", "title", "authors", "publicationTitle",
+  "year", "date", "doi", "url", "abstractNote", "tags",
+  "collectionName", "libraryName",
+] as const;
+
+function initCsvCheckboxes() {
+  const saved = (getPref("csvColumns") as string) || "title";
+  const selected = new Set(saved.split(",").map((k: string) => k.trim()).filter(Boolean));
+  for (const key of CSV_COLUMN_KEYS) {
+    const cb = query<XUL.Checkbox>(`#zotero-prefpane-${config.addonRef}-csvCol-${key}`);
+    if (cb) {
+      cb.checked = selected.has(key);
+      cb.addEventListener("command", saveCsvCheckboxes);
+    }
+  }
+}
+
+function saveCsvCheckboxes() {
+  const checked: string[] = [];
+  for (const key of CSV_COLUMN_KEYS) {
+    const cb = query<XUL.Checkbox>(`#zotero-prefpane-${config.addonRef}-csvCol-${key}`);
+    if (cb?.checked) {
+      checked.push(key);
+    }
+  }
+  const value = checked.length > 0 ? checked.join(",") : "title";
+  Zotero.Prefs.set(`extensions.${config.prefsPrefix}.csvColumns`, value, true);
+}
+
 export async function registerPrefsScripts(_window: Window) {
   addon.data.prefs = {
     window: _window, columns: [], rows: [] };
   updateStaticText();
   ensureSupabaseVisible();
   bindSyncProfileToggle();
+  initCsvCheckboxes();
 }
