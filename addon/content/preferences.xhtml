@@ -1,6 +1,32 @@
-﻿<linkset>
+<linkset>
   <html:link rel="localization" href="__addonRef__-preferences.ftl" />
 </linkset>
+<html:style>
+  /* Label alignment */
+  #zotero-prefpane-__addonRef__ groupbox hbox[align="center"] > label,
+  #zotero-prefpane-__addonRef__ groupbox hbox[align="center"] > html|label {
+    min-width: 160px;
+    text-align: end;
+    margin-right: 8px;
+  }
+  /* Input fields fill available space */
+  #zotero-prefpane-__addonRef__ groupbox hbox[align="center"] > html|input {
+    flex: 1;
+  }
+  /* Hint text styling */
+  #zotero-prefpane-__addonRef__ groupbox description {
+    font-size: 0.85em;
+    color: #888;
+    margin-left: 168px;
+  }
+  /* Build info footer */
+  #zotero-prefpane-__addonRef__-build-info {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    margin-top: 12px;
+  }
+</html:style>
 <groupbox
   onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window })"
 >
@@ -8,7 +34,7 @@
 
   <!-- Mode -->
   <hbox align="center">
-    <label value="Mode" />
+    <label data-l10n-id="pref-mode" />
     <menulist id="zotero-prefpane-__addonRef__-mode" preference="mode">
       <menupopup>
         <menuitem value="github" label="GitHub" />
@@ -121,28 +147,25 @@
       preference="copyShareUrl"
       data-l10n-id="pref-copy-share-url"
     />
+    <separator class="thin" />
+    <hbox align="center">
+      <html:label
+        for="zotero-prefpane-__addonRef__-defaultSharePassword"
+        data-l10n-id="pref-default-password"
+      ></html:label>
+      <html:input
+        id="zotero-prefpane-__addonRef__-defaultSharePassword"
+        type="password"
+        preference="defaultSharePassword"
+      ></html:input>
+    </hbox>
+    <description id="__addonRef__-default-password-hint"></description>
   </vbox>
 
   <separator class="thin" />
 
   <!-- Export Options -->
   <html:h3 data-l10n-id="pref-export-title"></html:h3>
-
-  <!-- Export Scope -->
-  <hbox align="center">
-    <html:label
-      for="zotero-prefpane-__addonRef__-exportScope"
-      data-l10n-id="pref-export-scope"
-    ></html:label>
-    <menulist id="zotero-prefpane-__addonRef__-exportScope" preference="exportScope">
-      <menupopup>
-        <menuitem value="collection" data-l10n-id="pref-export-scope-collection" />
-        <menuitem value="collectionRecursive" data-l10n-id="pref-export-scope-recursive" />
-        <menuitem value="library" data-l10n-id="pref-export-scope-library" />
-      </menupopup>
-    </menulist>
-  </hbox>
-  <description id="__addonRef__-export-scope-hint"></description>
 
   <!-- Zotero Group ID -->
   <hbox align="center">
@@ -152,7 +175,7 @@
     ></html:label>
     <html:input
       id="zotero-prefpane-__addonRef__-groupID"
-      type="text"
+      type="number"
       preference="groupID"
     ></html:input>
   </hbox>
@@ -172,11 +195,27 @@
   </hbox>
   <description id="__addonRef__-fixed-slug-hint"></description>
 
+  <!-- Include child notes -->
   <checkbox
     id="zotero-prefpane-__addonRef__-includeNotes"
     preference="includeNotes"
     data-l10n-id="pref-include-notes"
   />
+
+  <!-- Status Source (moved from CSV Export section) -->
+  <hbox align="center">
+    <html:label
+      for="zotero-prefpane-__addonRef__-statusField"
+      data-l10n-id="pref-status-field"
+    ></html:label>
+    <menulist id="zotero-prefpane-__addonRef__-statusField" preference="statusField">
+      <menupopup>
+        <menuitem value="collection" data-l10n-id="pref-status-field-collection" />
+        <menuitem value="library" data-l10n-id="pref-status-field-library" />
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="__addonRef__-status-hint"></description>
 
   <separator class="thin" />
 
@@ -193,17 +232,6 @@
     ></html:input>
   </hbox>
   <description id="__addonRef__-csv-columns-hint"></description>
-
-  <hbox align="center">
-    <label value="Status Source" />
-    <menulist id="zotero-prefpane-__addonRef__-statusField" preference="statusField">
-      <menupopup>
-        <menuitem value="collection" label="Collection Path" />
-        <menuitem value="library" label="Library Name" />
-      </menupopup>
-    </menulist>
-  </hbox>
-  <description id="__addonRef__-status-hint"></description>
 
   <separator class="thin" />
 
@@ -235,6 +263,7 @@
       <html:input
         id="zotero-prefpane-__addonRef__-collaborationPollInterval"
         type="number"
+        min="10"
         preference="collaborationPollInterval"
       ></html:input>
     </hbox>
@@ -289,25 +318,11 @@
         preference="reportedCollectionName"
       ></html:input>
     </hbox>
-
-    <separator class="thin" />
-
-    <hbox align="center">
-      <html:label
-        for="zotero-prefpane-__addonRef__-defaultSharePassword"
-        data-l10n-id="pref-default-password"
-      ></html:label>
-      <html:input
-        id="zotero-prefpane-__addonRef__-defaultSharePassword"
-        type="password"
-        preference="defaultSharePassword"
-      ></html:input>
-    </hbox>
-    <description id="__addonRef__-default-password-hint"></description>
   </vbox>
 </groupbox>
 <vbox>
   <html:label
+    id="__addonRef__-build-info"
     data-l10n-id="pref-help"
     data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'
   ></html:label>

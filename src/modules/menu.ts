@@ -48,7 +48,6 @@ function formatFailureMessage(failures: string[]): string {
 }
 
 async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
-  const exportScope = getPref("exportScope") || "collection";
   const groupID = getPref("groupID").trim();
 
   // Validate groupID early if provided
@@ -60,9 +59,8 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
     }
   }
 
-  // collection is optional for "library" export scope
   const collection = staticSync.getSelectedCollection();
-  if (!collection && exportScope !== "library") {
+  if (!collection) {
     Zotero.alert(win, "Zotero-StaticSync", getString("zotero-staticsync-error-no-collection"));
     return;
   }
@@ -77,11 +75,9 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
     password = value;
   }
 
-  const progressLabel = exportScope === "library"
-    ? getString("zotero-staticsync-sync-progress-start-library")
-    : getString("zotero-staticsync-sync-progress-start", {
-        args: { collection: collection?.name || "" },
-      });
+  const progressLabel = getString("zotero-staticsync-sync-progress-start", {
+    args: { collection: collection.name },
+  });
 
   const progress = new ztoolkit.ProgressWindow("Zotero-StaticSync", {
     closeOnClick: true,
@@ -116,16 +112,12 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
             url: result.shareUrl,
           },
         })
-      : (exportScope === "library"
-        ? getString("zotero-staticsync-sync-success-github-library", {
-            args: { count: result.successCount, library: result.exportName || "" },
-          })
-        : getString("zotero-staticsync-sync-success-github", {
-            args: {
-              count: result.successCount,
-              collection: result.exportName || "",
-            },
-          }));
+      : getString("zotero-staticsync-sync-success-github", {
+          args: {
+            count: result.successCount,
+            collection: result.exportName || "",
+          },
+        });
 
     progress.changeLine({
       progress: 100,
@@ -178,12 +170,7 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
   });
 
   popup.addEventListener("popupshowing", () => {
-    const exportScope = getPref("exportScope") || "collection";
-    // For library scope, always show the menu items
-    // For collection scope, only show when a collection is selected
-    const collection = exportScope === "library"
-      ? { name: "" } // placeholder - always visible
-      : staticSync.getSelectedCollection();
+    const collection = staticSync.getSelectedCollection();
     const hidden = collection ? "false" : "true";
     menuItem.setAttribute("hidden", hidden);
     csvMenuItem.setAttribute("hidden", hidden);

@@ -99,11 +99,6 @@ function updateStaticText() {
     shareHint.textContent = getString("pref-share-base-url-help");
   }
 
-  const exportScopeHint = query<HTMLElement>(`#${config.addonRef}-export-scope-hint`);
-  if (exportScopeHint) {
-    exportScopeHint.textContent = getString("pref-export-scope-help");
-  }
-
   const groupHint = query<HTMLElement>(`#${config.addonRef}-group-id-hint`);
   if (groupHint) {
     groupHint.textContent = getString("pref-group-id-help");

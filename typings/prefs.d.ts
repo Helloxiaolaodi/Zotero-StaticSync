@@ -19,7 +19,6 @@ declare namespace _ZoteroTypes {
       "copyShareUrl": boolean;
       "includeNotes": boolean;
       "statusField": string;
-      "exportScope": string;
       "groupID": string;
       "fixedShareSlug": string;
       "syncProfile": string;

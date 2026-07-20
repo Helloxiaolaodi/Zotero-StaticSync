@@ -116,10 +116,9 @@ async function pickSavePath(
 // -- Main export handler -----------------------------------------
 
 export async function handleExportCsv(win: _ZoteroTypes.MainWindow): Promise<void> {
-  const exportScope = getPref("exportScope") || "collection";
   const collection = staticSync.getSelectedCollection();
 
-  if (!collection && exportScope !== "library") {
+  if (!collection) {
     Zotero.alert(
       win,
       "Zotero-StaticSync",
@@ -151,7 +150,7 @@ export async function handleExportCsv(win: _ZoteroTypes.MainWindow): Promise<voi
 
   try {
     const { items, exportName } = await staticSync.extractCollectionData(
-      collection || undefined,
+      collection,
     );
 
     if (!items.length) {

@@ -238,48 +238,25 @@ export class StaticSync {
     colPathText: string;
   }> {
     const statusField = getPref("statusField");
-    const exportScope = getPref("exportScope") || "collection";
     const libraryID = this.resolveLibraryID();
     const libName = getLibraryName(libraryID);
-    const colPathText = collection ? getCollectionPath(collection).join(" / ") : libName;
-    const colPath = collection ? getCollectionPath(collection) : [];
 
-    let rawItems: Zotero.Item[];
-    let exportName: string;
+    if (!collection) throw new Error("No collection selected.");
 
-    if (exportScope === "library") {
-      rawItems = await collectWholeLibrary(libraryID);
-      exportName = libName;
-    } else if (exportScope === "collectionRecursive" && collection) {
-      const itemsWithPath = await collectAllCollectionsRecursive(collection);
-      const parentName = collection.name;
-      {
-        const items: StaticSyncItem[] = [];
-        for (const { item, collectionPath } of itemsWithPath) {
-          const itemColName = collectionPath[collectionPath.length - 1] || parentName;
-          const itemPathText = collectionPath.join(" / ") || itemColName;
-          const itemStatus = statusField === "library" ? libName : itemPathText;
-          items.push(await this.buildItemData(item, itemColName, libName, collectionPath, itemPathText, itemStatus, itemColName));
-        }
-        return { items, exportName: collection.name, libName, colPath, colPathText: colPathText || collection.name };
-      }
-    } else {
-      // "collection" or default
-      if (!collection) throw new Error("No collection selected. Choose a collection or set exportScope to 'library'.");
-      rawItems = (await collection.getChildItems() as Zotero.Item[]).filter((it) => it.isRegularItem());
-      exportName = collection.name;
-    }
+    const colPathText = getCollectionPath(collection).join(" / ");
+    const colPath = getCollectionPath(collection);
 
-    const collName = collection?.name || libName;
-    const readingStatus = colPath[colPath.length - 1] || collName;
-    const status = statusField === "library" ? libName : colPathText || collName;
-
+    // Always use collectionRecursive scope
+    const itemsWithPath = await collectAllCollectionsRecursive(collection);
+    const parentName = collection.name;
     const items: StaticSyncItem[] = [];
-    for (const item of rawItems) {
-      items.push(await this.buildItemData(item, collName, libName, colPath, colPathText || collName, status, readingStatus));
+    for (const { item, collectionPath } of itemsWithPath) {
+      const itemColName = collectionPath[collectionPath.length - 1] || parentName;
+      const itemPathText = collectionPath.join(" / ") || itemColName;
+      const itemStatus = statusField === "library" ? libName : itemPathText;
+      items.push(await this.buildItemData(item, itemColName, libName, collectionPath, itemPathText, itemStatus, itemColName));
     }
-
-    return { items, exportName, libName, colPath, colPathText: colPathText || collName };
+    return { items, exportName: collection.name, libName, colPath, colPathText: colPathText || collection.name };
   }
 
   // -- Hugo Markdown -----------------------------------------
@@ -475,10 +452,9 @@ export class StaticSync {
     // Persist last-synced info for collaboration polling
     setPref("lastSyncedShareSlug", identifier);
     setPref("lastSyncedLibraryID", String(libraryID));
-    if (getPref("exportScope") === "collection") {
-      const col = this.getSelectedCollection();
-      if (col) setPref("lastSyncedCollectionKey", col.key);
-    }
+    // Persist last-synced collection key for collaboration polling
+    const col = this.getSelectedCollection();
+    if (col) setPref("lastSyncedCollectionKey", col.key);
 
     return this.buildSupabaseShareURL(identifier);
   }

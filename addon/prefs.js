@@ -10,7 +10,6 @@ pref("shareBaseUrl", "");
 pref("copyShareUrl", true);
 pref("includeNotes", false);
 pref("statusField", "collection");
-pref("exportScope", "collection");
 pref("groupID", "");
 pref("fixedShareSlug", "");
 pref("syncProfile", "static");
