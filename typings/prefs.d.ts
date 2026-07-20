@@ -32,6 +32,7 @@ declare namespace _ZoteroTypes {
       "lastSyncedShareSlug": string;
       "lastSyncedLibraryID": string;
       "lastSyncedCollectionKey": string;
+      "csvColumns": string;
     };
   }
 }

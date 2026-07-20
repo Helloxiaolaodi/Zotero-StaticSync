@@ -18,6 +18,7 @@ A Zotero plugin that exports Zotero collections to GitHub (Markdown + Hugo front
 - **Fixed share slug** — keep a stable, custom URL for repeated syncs instead of a random slug each time
 - **Collaborative sync profile** — enable web-to-Zotero bidirectional sync with background polling
 - **Collaboration workflow** — web-side actions (claim, report, add by DOI, undo) are applied to your Zotero library
+- **Export CSV** — export collection items to a local CSV file with customizable columns (default: sequence number + title)
 - **Public share frontend** — Next.js + Supabase share page with author formatting, status tabs, DOI links, and password gate
 
 ## Installation
@@ -79,6 +80,11 @@ Run `doc/supabase-schema.sql` in your Supabase SQL Editor. It creates:
 | Claimed collection | `Claimed` | Zotero collection name for claimed items |
 | Reported collection | `Reported` | Zotero collection name for reported items |
 | Default share password | (empty) | Pre-filled password for new shares |
+| CSV columns | `title` | Comma-separated column keys to include in CSV export |
+
+### CSV Export
+
+Available column keys: `key`, `itemType`, `title`, `authors`, `publicationTitle`, `year`, `date`, `doi`, `url`, `abstractNote`, `tags`, `collectionName`, `libraryName`. The sequence number column is always included as the first column.
 
 ## Usage
 
@@ -86,6 +92,13 @@ Run `doc/supabase-schema.sql` in your Supabase SQL Editor. It creates:
 2. Right-click the collection → **Sync Collection with Zotero-StaticSync**.
 3. If Supabase mode: enter a password or leave blank for public access.
 4. Wait for the progress message. If successful, the share URL is copied to your clipboard.
+
+To export items as CSV:
+
+1. Select a Zotero collection (or set Export Scope to "Entire library").
+2. Right-click the collection → **Export CSV with Zotero-StaticSync**.
+3. Choose a save location in the file dialog.
+4. The CSV file is saved with UTF-8 BOM encoding for Excel compatibility.
 
 ## Public Share Frontend
 
@@ -100,13 +113,20 @@ A companion Next.js frontend renders collection data from Supabase as a public w
 
 ### Frontend features
 
+- **Bilingual UI** — full Chinese/English toggle with language switch button
+- Workflow tabs: 待阅读/已认领/已汇报 (Chinese) ↔ Unread/Assigned/Reported (English)
+- User Guide panel with detailed bilingual instructions
+- Subtitle line under header describing page purpose (bilingual)
 - Author display: first 3 authors + "et al."
-- Status tags with color coding (pending/claimed/reported)
-- DOI linkification
+- Status badges with color coding (gray=Unread, blue=Assigned, green=Reported)
+- Reporter/presenter chips showing name and date for claimed/reported items
+- No Zotero tags displayed in Unread section; only presenter chips in Assigned/Reported
+- DOI linkification with "查看原文"/"View source" links aligned inline
 - Journal name in italic
 - Line-clamped titles
-- Password gate for protected collections
-- **Collaboration mode**: claim, report, add-by-DOI, and undo buttons with reporter name/date forms
+- Password gate for protected collections (bilingual)
+- **Collaboration mode**: claim, report, add-by-DOI, and undo buttons with presenter name/date forms
+- Improved categorization: checks readingStatus, collectionPath, collectionName, and tags in priority order; supports both Chinese and English collection names
 
 ## Build from source
 

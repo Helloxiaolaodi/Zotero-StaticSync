@@ -1,8 +1,10 @@
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 import { staticSync } from "./staticsync";
+import { handleExportCsv } from "./csvexport";
 
 const MENU_ID = "zotero-collectionmenu-staticsync";
+const EXPORT_CSV_MENU_ID = "zotero-collectionmenu-staticsync-exportcsv";
 
 function getCollectionMenuPopup(win: _ZoteroTypes.MainWindow) {
   return (
@@ -159,6 +161,7 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
     return;
   }
 
+  // Sync Collection menu item
   const menuItem = win.document.createXULElement("menuitem");
   menuItem.id = MENU_ID;
   menuItem.setAttribute("label", getString("zotero-staticsync-collection-menu-label"));
@@ -166,19 +169,31 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
     void handleSyncCommand(win);
   });
 
+  // Export CSV menu item
+  const csvMenuItem = win.document.createXULElement("menuitem");
+  csvMenuItem.id = EXPORT_CSV_MENU_ID;
+  csvMenuItem.setAttribute("label", getString("zotero-staticsync-csv-menu-label"));
+  csvMenuItem.addEventListener("command", () => {
+    void handleExportCsv(win);
+  });
+
   popup.addEventListener("popupshowing", () => {
     const exportScope = getPref("exportScope") || "collection";
-    // For library scope, always show the menu item
+    // For library scope, always show the menu items
     // For collection scope, only show when a collection is selected
     const collection = exportScope === "library"
       ? { name: "" } // placeholder - always visible
       : staticSync.getSelectedCollection();
-    menuItem.setAttribute("hidden", collection ? "false" : "true");
+    const hidden = collection ? "false" : "true";
+    menuItem.setAttribute("hidden", hidden);
+    csvMenuItem.setAttribute("hidden", hidden);
   });
 
   popup.appendChild(menuItem);
+  popup.appendChild(csvMenuItem);
 }
 
 export function unregisterCollectionMenu(win: Window) {
   win.document.getElementById(MENU_ID)?.remove();
+  win.document.getElementById(EXPORT_CSV_MENU_ID)?.remove();
 }

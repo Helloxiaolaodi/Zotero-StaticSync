@@ -40,4 +40,7 @@ pref-claimed-collection = Claimed collection
 pref-reported-collection = Reported collection
 pref-default-password = Default share password
 pref-default-password-help = Pre-filled password for new shares. Can be overridden per-sync. Leave blank for public access.
+pref-csv-title = CSV Export
+pref-csv-columns = CSV columns
+pref-csv-columns-help = Comma-separated column keys. Available: key, itemType, title, authors, publicationTitle, year, date, doi, url, abstractNote, tags, collectionName, libraryName. Default: title
 pref-help = { $name } Build { $version } { $time }

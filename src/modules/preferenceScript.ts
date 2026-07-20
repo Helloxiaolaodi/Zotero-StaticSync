@@ -128,6 +128,11 @@ function updateStaticText() {
   if (defaultPasswordHint) {
     defaultPasswordHint.textContent = getString("pref-default-password-help");
   }
+
+  const csvColumnsHint = query<HTMLElement>(`#${config.addonRef}-csv-columns-hint`);
+  if (csvColumnsHint) {
+    csvColumnsHint.textContent = getString("pref-csv-columns-help");
+  }
 }
 
 export async function registerPrefsScripts(_window: Window) {

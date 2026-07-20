@@ -178,6 +178,22 @@
     data-l10n-id="pref-include-notes"
   />
 
+  <separator class="thin" />
+
+  <html:h3 data-l10n-id="pref-csv-title"></html:h3>
+  <hbox align="center">
+    <html:label
+      for="zotero-prefpane-__addonRef__-csvColumns"
+      data-l10n-id="pref-csv-columns"
+    ></html:label>
+    <html:input
+      id="zotero-prefpane-__addonRef__-csvColumns"
+      type="text"
+      preference="csvColumns"
+    ></html:input>
+  </hbox>
+  <description id="__addonRef__-csv-columns-hint"></description>
+
   <hbox align="center">
     <label value="Status Source" />
     <menulist id="zotero-prefpane-__addonRef__-statusField" preference="statusField">
