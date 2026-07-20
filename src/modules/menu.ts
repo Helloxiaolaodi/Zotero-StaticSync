@@ -75,19 +75,12 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
       copyToClipboard(result.shareUrl);
     }
 
-    const successText = result.shareUrl
-      ? getString("zotero-staticsync-sync-success-supabase", {
-          args: {
-            count: result.successCount,
-            url: result.shareUrl,
-          },
-        })
-      : getString("zotero-staticsync-sync-success-github", {
-          args: {
-            count: result.successCount,
-            collection: result.exportName || "",
-          },
-        });
+    const successText = getString("zotero-staticsync-sync-success-supabase", {
+        args: {
+          count: result.successCount,
+          url: result.shareUrl || "",
+        },
+      });
 
     progress.changeLine({
       progress: 100,

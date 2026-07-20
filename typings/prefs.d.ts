@@ -7,11 +7,6 @@
 declare namespace _ZoteroTypes {
   interface Prefs {
     PluginPrefsMap: {
-      "mode": string;
-      "githubToken": string;
-      "githubRepo": string;
-      "githubBranch": string;
-      "githubContentPath": string;
       "supabaseUrl": string;
       "supabaseKey": string;
       "supabaseTable": string;

@@ -1,9 +1,4 @@
-﻿pref("mode", "github");
-pref("githubToken", "");
-pref("githubRepo", "");
-pref("githubBranch", "main");
-pref("githubContentPath", "content/reading");
-pref("supabaseUrl", "");
+﻿pref("supabaseUrl", "");
 pref("supabaseKey", "");
 pref("supabaseTable", "shared_collections");
 pref("shareBaseUrl", "");

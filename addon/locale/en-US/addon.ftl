@@ -3,7 +3,6 @@ zotero-staticsync-startup-finish = Zotero-StaticSync is ready
 zotero-staticsync-prefs-title = StaticSync
 zotero-staticsync-collection-menu-label = Sync Collection with Zotero-StaticSync
 zotero-staticsync-sync-progress-start = Syncing { $collection }
-zotero-staticsync-sync-success-github = Synced { $count } items from { $collection } to GitHub.
 zotero-staticsync-sync-success-supabase = Uploaded { $count } items. Share URL: { $url }
 zotero-staticsync-sync-partial-failure = { $count } items failed to sync.
 zotero-staticsync-error-no-collection = Please select a Zotero collection first.

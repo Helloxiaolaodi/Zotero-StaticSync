@@ -1,10 +1,4 @@
 ﻿pref-title = StaticSync 设置
-pref-mode = 模式
-pref-github-title = GitHub 发布配置
-pref-github-repo = GitHub 仓库
-pref-github-token = GitHub Token
-pref-github-branch = 分支
-pref-github-content-path = 内容目录
 pref-supabase-title = Supabase 分享配置
 pref-supabase-url = Supabase 地址
 pref-supabase-key = Supabase anon/public 密钥

@@ -59,10 +59,6 @@ function sanitizeSegment(input: string): string {
     .slice(0, 80);
 }
 
-function yamlEscape(input: string): string {
-  return input.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
-}
-
 function extractYear(dateValue: string): string {
   const m = dateValue.match(/(\d{4})/);
   return m ? m[1] : "";
@@ -81,17 +77,6 @@ function summarizeText(input: string, maxLength = 240): string {
   if (!text) return "";
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 3).trimEnd()}...`;
-}
-
-function yamlList(values: string[]): string {
-  return `[${values.map((v) => `"${yamlEscape(v)}"`).join(", ")}]`;
-}
-
-function base64EncodeUnicode(input: string): string {
-  const bytes = new TextEncoder().encode(input);
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary);
 }
 
 async function readItemNote(item: Zotero.Item): Promise<string> {
@@ -157,13 +142,6 @@ async function collectWholeLibrary(libraryID: number): Promise<Zotero.Item[]> {
 }
 
 // -- Main class ----------------------------------------------
-
-interface GitHubCommitBody {
-  message: string;
-  content: string;
-  branch: string;
-  sha?: string;
-}
 
 export class StaticSync {
   // -- Collection resolution ---------------------------------
@@ -257,89 +235,6 @@ export class StaticSync {
       items.push(await this.buildItemData(item, itemColName, libName, collectionPath, itemPathText, itemStatus, itemColName));
     }
     return { items, exportName: collection.name, libName, colPath, colPathText: colPathText || collection.name };
-  }
-
-  // -- Hugo Markdown -----------------------------------------
-  convertToHugoMarkdown(item: StaticSyncItem): string {
-    const fm = [
-      "---",
-      `title: \"${yamlEscape(item.title)}\"`,
-      `slug: \"${yamlEscape(item.slug)}\"`,
-      `summary: \"${yamlEscape(item.summary)}\"`,
-      `description: \"${yamlEscape(item.description)}\"`,
-      `zotero_key: \"${item.key}\"`,
-      `date: \"${yamlEscape(item.date)}\"`,
-      `lastmod: \"${new Date().toISOString()}\"`,
-      "draft: false",
-      `year: \"${yamlEscape(item.year)}\"`,
-      `status: \"${yamlEscape(item.status)}\"`,
-      `reading_status: \"${yamlEscape(item.readingStatus)}\"`,
-      `collection: \"${yamlEscape(item.collectionName)}\"`,
-      `library: \"${yamlEscape(item.libraryName)}\"`,
-      `categories: ${yamlList(item.collectionPath)}`,
-      `zotero_collection_path: ${yamlList(item.collectionPath)}`,
-      `zotero_collection_path_text: \"${yamlEscape(item.collectionPathText)}\"`,
-      `zotero_collection: \"${yamlEscape(item.collectionName)}\"`,
-      `zotero_library: \"${yamlEscape(item.libraryName)}\"`,
-      `item_type: \"${yamlEscape(item.itemType)}\"`,
-      `zotero_item_type: \"${yamlEscape(item.itemType)}\"`,
-      `publication_title: \"${yamlEscape(item.publicationTitle)}\"`,
-      `url: \"${yamlEscape(item.url)}\"`,
-      `source_url: \"${yamlEscape(item.url)}\"`,
-      `doi: \"${yamlEscape(item.doi)}\"`,
-      `authors: ${yamlList(item.creators)}`,
-      `tags: ${yamlList(item.tags)}`,
-      "---",
-      "",
-    ];
-    const body: string[] = [];
-    if (item.abstractNote) { body.push(normalizeText(item.abstractNote)); body.push(""); }
-    if (item.note) { body.push("## Notes"); body.push(""); body.push(normalizeText(item.note)); body.push(""); }
-    return [...fm, ...body].join("\n");
-  }
-
-  getGitHubFilePath(item: StaticSyncItem): string {
-    const base = getPref("githubContentPath").replace(/^\/+|\/+$/g, "");
-    const seg = sanitizeSegment(item.status) || "collection";
-    return `${base}/${seg}-${item.slug}.md`;
-  }
-
-  // -- GitHub push -------------------------------------------
-  async pushToGitHub(item: StaticSyncItem): Promise<void> {
-    const repo = getPref("githubRepo").trim();
-    const token = getPref("githubToken").trim();
-    const branch = getPref("githubBranch").trim() || "main";
-    if (!repo || !token) throw new Error("GitHub repository and token are required.");
-
-    const path = this.getGitHubFilePath(item);
-    const apiURL = `https://api.github.com/repos/${repo}/contents/${path}`;
-    const md = this.convertToHugoMarkdown(item);
-    const body: GitHubCommitBody = {
-      message: `StaticSync: sync ${item.title}`,
-      content: base64EncodeUnicode(md),
-      branch,
-    };
-
-    const existingResp = await fetch(apiURL, {
-      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json" },
-    });
-    if (existingResp.ok) {
-      const exist = (await existingResp.json()) as { sha?: string };
-      if (exist.sha) body.sha = exist.sha;
-    } else if (existingResp.status !== 404) {
-      throw new Error(`GitHub lookup failed (${existingResp.status}).`);
-    }
-
-    const resp = await fetch(apiURL, {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!resp.ok) throw new Error(`GitHub sync failed (${resp.status}): ${await resp.text()}`);
   }
 
   // -- Supabase share URL ------------------------------------
@@ -469,23 +364,8 @@ export class StaticSync {
       return { successCount: 0, failureCount: 0, failures: [], exportName };
     }
 
-    const mode = getPref("mode");
-    if (mode === "supabase") {
-      const shareUrl = await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libraryID);
-      return { successCount: items.length, failureCount: 0, failures: [], shareUrl, exportName };
-    }
-
-    let successCount = 0;
-    const failures: string[] = [];
-    for (const item of items) {
-      try {
-        await this.pushToGitHub(item);
-        successCount++;
-      } catch (e) {
-        failures.push(`${item.title}: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
-    return { successCount, failureCount: failures.length, failures, exportName };
+    const shareUrl = await this.pushToSupabase(items, exportName, colPath, colPathText, libName, libraryID);
+    return { successCount: items.length, failureCount: 0, failures: [], shareUrl, exportName };
   }
 }
 

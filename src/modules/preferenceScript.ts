@@ -2,29 +2,14 @@ import { config } from "../../package.json";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
 
-type SyncMode = "github" | "supabase";
 type SyncProfile = "static" | "collaborative";
 
 function query<T extends Element>(selector: string): T | null {
   return addon.data.prefs?.window.document.querySelector(selector) as T | null;
 }
 
-function normalizeMode(value: string | undefined | null): SyncMode {
-  return value === "supabase" ? "supabase" : "github";
-}
-
 function normalizeProfile(value: string | undefined | null): SyncProfile {
   return value === "collaborative" ? "collaborative" : "static";
-}
-
-function syncModeSections(mode: SyncMode) {
-  const githubBox = query<HTMLElement>(`#${config.addonRef}-github-settings`);
-  const supabaseBox = query<HTMLElement>(`#${config.addonRef}-supabase-settings`);
-  if (!githubBox || !supabaseBox) {
-    return;
-  }
-  githubBox.hidden = mode !== "github";
-  supabaseBox.hidden = mode !== "supabase";
 }
 
 function syncProfileSections(profile: SyncProfile) {
@@ -32,14 +17,6 @@ function syncProfileSections(profile: SyncProfile) {
   if (collabBox) {
     collabBox.hidden = profile !== "collaborative";
   }
-}
-
-function getSelectedMode(select: XUL.MenuList): SyncMode {
-  const value =
-    (select.value as string) ||
-    select.getAttribute("value") ||
-    (getPref("mode") as string);
-  return normalizeMode(value);
 }
 
 function getSelectedProfile(select: XUL.MenuList): SyncProfile {
@@ -50,23 +27,12 @@ function getSelectedProfile(select: XUL.MenuList): SyncProfile {
   return normalizeProfile(value);
 }
 
-function bindModeToggle() {
-  const select = query<XUL.MenuList>(`#zotero-prefpane-${config.addonRef}-mode`);
-  if (!select || select.getAttribute("data-bound") === "true") {
-    return;
+function ensureSupabaseVisible() {
+  // GitHub mode removed — Supabase section is always visible
+  const supabaseBox = query<HTMLElement>(`#${config.addonRef}-supabase-settings`);
+  if (supabaseBox) {
+    supabaseBox.hidden = false;
   }
-  select.setAttribute("data-bound", "true");
-
-  const applyMode = () => {
-    syncModeSections(getSelectedMode(select));
-  };
-
-  applyMode();
-  addon.data.prefs?.window.setTimeout(applyMode, 0);
-
-  select.addEventListener("command", applyMode);
-  select.addEventListener("change", applyMode);
-  select.addEventListener("select", applyMode);
 }
 
 function bindSyncProfileToggle() {
@@ -134,6 +100,6 @@ export async function registerPrefsScripts(_window: Window) {
   addon.data.prefs = {
     window: _window, columns: [], rows: [] };
   updateStaticText();
-  bindModeToggle();
+  ensureSupabaseVisible();
   bindSyncProfileToggle();
 }

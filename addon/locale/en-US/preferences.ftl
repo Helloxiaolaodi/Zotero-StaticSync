@@ -1,10 +1,4 @@
 ﻿pref-title = StaticSync Settings
-pref-mode = Mode
-pref-github-title = GitHub Publishing
-pref-github-repo = GitHub repository
-pref-github-token = GitHub token
-pref-github-branch = Branch
-pref-github-content-path = Content path
 pref-supabase-title = Supabase Sharing
 pref-supabase-url = Supabase URL
 pref-supabase-key = Supabase anon/public key

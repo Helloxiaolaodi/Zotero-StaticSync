@@ -3,7 +3,6 @@ zotero-staticsync-startup-finish = Zotero-StaticSync 已就绪
 zotero-staticsync-prefs-title = StaticSync
 zotero-staticsync-collection-menu-label = 使用 Zotero-StaticSync 同步该文件夹
 zotero-staticsync-sync-progress-start = 正在同步 { $collection }
-zotero-staticsync-sync-success-github = 已将 { $collection } 中的 { $count } 条文献同步到 GitHub。
 zotero-staticsync-sync-success-supabase = 已上传 { $count } 条文献。分享链接：{ $url }
 zotero-staticsync-sync-partial-failure = 有 { $count } 条文献同步失败。
 zotero-staticsync-error-no-collection = 请先选中一个 Zotero 文件夹。
