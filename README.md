@@ -34,6 +34,9 @@ A Zotero plugin that exports Zotero collections to Supabase (structured JSON for
 - **Undo button for DOI-added items** — `resolveDoiToItem()` always adds an `added_by:web` tag, so the undo button appears for all web-added items.
 - **Batch submit resolves metadata** — after batch DOI import, `refetchCollection()` is called so DOI strings are immediately replaced with article titles and authors.
 - **Faster polling** — default poll interval is 15s. After processing actions, the plugin pushes updated state back via `silentSyncBack()`.
+- **Sync-back slug fix** — `pushToSupabase` now uses `lastSyncedShareSlug` as fallback when `fixedShareSlug` is empty, so bidirectional sync actually updates the existing Supabase record instead of creating a new one.
+- **Collection-aware DOI routing** — DOI items submitted from the To Read section are placed in the To Read collection; items from the Claimed section go to the Claimed collection. Existing DOI duplicates are also routed to the correct collection.
+- **Web-side status sync** — `undo_claim` and `undo_report` in `share.ts` now update `status`/`readingStatus` fields in addition to tags, so items move between buckets immediately on the web page.
 
 ## Installation
 

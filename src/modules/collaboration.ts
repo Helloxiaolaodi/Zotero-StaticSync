@@ -1,4 +1,4 @@
-import { getPref, setPref } from "../utils/prefs";
+﻿import { getPref, setPref } from "../utils/prefs";
 import { staticSync } from "./staticsync";
 
 interface PendingAction {
@@ -151,12 +151,19 @@ export class CollaborationManager {
           for (const id of existingIDs) {
             const existingItem = await Zotero.Items.getAsync(id);
             if (!existingItem || !existingItem.isRegularItem()) continue;
-            existingItem.addTag("auto_claimed");
-            if (action.reporter_name) existingItem.addTag(`claimed_by:${action.reporter_name}`);
-            if (action.report_date) existingItem.addTag(`claim_date:${action.report_date}`);
-            await existingItem.saveTx();
-            const claimedCol = await this.findCollection(claimedName);
-            if (claimedCol) claimedCol.addItem(existingItem.id);
+            if (action.reporter_name) {
+              existingItem.addTag("auto_claimed");
+              existingItem.addTag(`claimed_by:${action.reporter_name}`);
+              if (action.report_date) existingItem.addTag(`claim_date:${action.report_date}`);
+              await existingItem.saveTx();
+              const claimedCol = await this.findCollection(claimedName);
+              if (claimedCol) claimedCol.addItem(existingItem.id);
+            } else {
+              existingItem.addTag(`added_by:web`);
+              await existingItem.saveTx();
+              const pendingCol = await this.findCollection(pendingName);
+              if (pendingCol) pendingCol.addItem(existingItem.id);
+            }
           }
          break;
        }
@@ -179,6 +186,11 @@ export class CollaborationManager {
             if (action.report_date) newItem.addTag(`claim_date:${action.report_date}`);
             const claimedCol = await this.findCollection(claimedName);
             if (claimedCol) claimedCol.addItem(newItem.id);
+          } else {
+            // No reporter_name: submitted from To Read section
+            newItem.addTag(`added_by:web`);
+            const pendingCol = await this.findCollection(pendingName);
+            if (pendingCol) pendingCol.addItem(newItem.id);
           }
          await newItem.saveTx();
        }

@@ -1,4 +1,4 @@
-import { config } from "../../package.json";
+﻿import { config } from "../../package.json";
 import { getPref, setPref } from "../utils/prefs";
 
 export interface StaticSyncItem {
@@ -276,7 +276,7 @@ export class StaticSync {
     const isCollaborative = syncProfile === "collaborative";
 
     // Resolve the slug: fixed slug only (no longer falls back to lastSyncedShareSlug)
-    let slug = getPref("fixedShareSlug").trim();
+    let slug = getPref("fixedShareSlug").trim() || getPref("lastSyncedShareSlug").trim();
     // If still empty, let the DB auto-generate it
 
     const payload: Record<string, unknown> = {
