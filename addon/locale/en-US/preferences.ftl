@@ -34,5 +34,4 @@ pref-reported-collection = Reported collection
 pref-default-password = Default share password
 pref-default-password-help = Pre-filled password for new shares. Can be overridden per-sync. Leave blank for public access.
 pref-csv-title = CSV Export
-pref-csv-columns-help = Select which columns to include in CSV exports.
 pref-help = { $name } Build { $version } { $time }

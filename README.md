@@ -68,7 +68,7 @@ Run `doc/supabase-schema.sql` in your Supabase SQL Editor. It creates:
 
 ### CSV Export
 
-Column selection uses checkboxes in the preferences panel. Available columns: Key, Item Type, Title, Authors, Publication Title, Year, Date, DOI, URL, Abstract Note, Tags, Collection Name, Library Name. The sequence number column is always included as the first column.
+Column selection uses checkboxes in the preferences panel. Available columns: Key, Item Type, Title, Authors, Publication Title, Year, Date, DOI, URL, Abstract Note, Tags, Collection Name, Collection Path (full folder hierarchy, e.g. "Parent / Child / Leaf"), Library Name. The sequence number column is always included as the first column. Checkboxes are saved automatically when toggled.
 
 ## Usage
 

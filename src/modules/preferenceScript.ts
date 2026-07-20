@@ -90,16 +90,12 @@ function updateStaticText() {
     defaultPasswordHint.textContent = getString("pref-default-password-help");
   }
 
-  const csvColumnsHint = query<HTMLElement>(`#${config.addonRef}-csv-columns-hint`);
-  if (csvColumnsHint) {
-    csvColumnsHint.textContent = getString("pref-csv-columns-help");
-  }
 }
 
 const CSV_COLUMN_KEYS = [
   "key", "itemType", "title", "authors", "publicationTitle",
   "year", "date", "doi", "url", "abstractNote", "tags",
-  "collectionName", "libraryName",
+  "collectionName", "collectionPathText", "libraryName",
 ] as const;
 
 function initCsvCheckboxes() {
@@ -110,6 +106,7 @@ function initCsvCheckboxes() {
     if (cb) {
       cb.checked = selected.has(key);
       cb.addEventListener("command", saveCsvCheckboxes);
+      cb.addEventListener("click", saveCsvCheckboxes);
     }
   }
 }

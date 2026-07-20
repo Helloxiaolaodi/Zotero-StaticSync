@@ -38,6 +38,7 @@ zotero-staticsync-csv-col-url = URL
 zotero-staticsync-csv-col-abstract-note = Abstract Note
 zotero-staticsync-csv-col-tags = Tags
 zotero-staticsync-csv-col-collection-name = Collection Name
+zotero-staticsync-csv-col-collection-path = Collection Path
 zotero-staticsync-csv-col-library-name = Library Name
 zotero-staticsync-csv-export-progress = Exporting CSV...
 zotero-staticsync-csv-export-success = Exported { $count } items to CSV.

@@ -38,6 +38,7 @@ zotero-staticsync-csv-col-url = URL
 zotero-staticsync-csv-col-abstract-note = 摘要
 zotero-staticsync-csv-col-tags = 标签
 zotero-staticsync-csv-col-collection-name = 文件夹名
+zotero-staticsync-csv-col-collection-path = 文件夹路径
 zotero-staticsync-csv-col-library-name = 文库名
 zotero-staticsync-csv-export-progress = 正在导出 CSV...
 zotero-staticsync-csv-export-success = 已导出 { $count } 条文献到 CSV。

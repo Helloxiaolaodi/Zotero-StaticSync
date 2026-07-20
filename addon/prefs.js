@@ -17,4 +17,4 @@ pref("reportedCollectionName", "Reported");
 pref("lastSyncedShareSlug", "");
 pref("lastSyncedLibraryID", "");
 pref("lastSyncedCollectionKey", "");
-pref("csvColumns", "title");
+pref("csvColumns", "title,collectionPathText");

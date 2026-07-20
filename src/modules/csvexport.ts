@@ -22,6 +22,7 @@ const ALL_COLUMNS: CsvColumn[] = [
   { key: "abstractNote", label: () => getString("zotero-staticsync-csv-col-abstract-note") },
   { key: "tags", label: () => getString("zotero-staticsync-csv-col-tags") },
   { key: "collectionName", label: () => getString("zotero-staticsync-csv-col-collection-name") },
+  { key: "collectionPathText", label: () => getString("zotero-staticsync-csv-col-collection-path") },
   { key: "libraryName", label: () => getString("zotero-staticsync-csv-col-library-name") },
 ];
 
@@ -53,6 +54,8 @@ function resolveFieldValue(item: StaticSyncItem, field: string): string {
       return formatAuthors(item.creators);
     case "tags":
       return formatTags(item.tags);
+    case "collectionPathText":
+      return item.collectionPathText || "";
     default:
       return (item as unknown as Record<string, string>)[field] ?? "";
   }
