@@ -219,7 +219,16 @@ export class StaticSync {
     const libraryID = this.resolveLibraryID();
     const libName = getLibraryName(libraryID);
 
-    if (!collection) throw new Error("No collection selected.");
+    // --- Whole-library sync (no collection selected) ---
+    if (!collection) {
+      const libItems = await collectWholeLibrary(libraryID);
+      const items: StaticSyncItem[] = [];
+      for (const item of libItems) {
+        const itemStatus = statusField === "library" ? libName : "Unfiled";
+        items.push(await this.buildItemData(item, "Unfiled", libName, [], "", itemStatus, "Unfiled"));
+      }
+      return { items, exportName: libName, libName, colPath: [], colPathText: libName };
+    }
 
     const colPathText = getCollectionPath(collection).join(" / ");
     const colPath = getCollectionPath(collection);
@@ -263,12 +272,8 @@ export class StaticSync {
     const syncProfile = getPref("syncProfile");
     const isCollaborative = syncProfile === "collaborative";
 
-    // Resolve the slug: fixed > last-known > auto-generated placeholder
+    // Resolve the slug: fixed slug only (no longer falls back to lastSyncedShareSlug)
     let slug = getPref("fixedShareSlug").trim();
-    if (!slug) {
-      const lastSlug = getPref("lastSyncedShareSlug").trim();
-      if (lastSlug) slug = lastSlug;
-    }
     // If still empty, let the DB auto-generate it
 
     const payload: Record<string, unknown> = {

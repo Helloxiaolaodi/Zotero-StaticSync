@@ -58,6 +58,12 @@ function formatFailureMessage(failures: string[]): string {
   return failures.slice(0, 5).join("\n");
 }
 
+function hasSelectedLibrary(): boolean {
+  const pane = Zotero.getActiveZoteroPane();
+  const libID = pane?.getSelectedLibraryID();
+  return libID !== undefined && libID !== null;
+}
+
 async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
   const groupID = getPref("groupID").trim();
 
@@ -71,13 +77,22 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
   }
 
   const collection = staticSync.getSelectedCollection();
-  if (!collection) {
+  const pane = Zotero.getActiveZoteroPane();
+  const libID = pane?.getSelectedLibraryID();
+
+  if (!collection && !libID) {
     Zotero.alert(win, "Zotero-StaticSync", getString("zotero-staticsync-error-no-collection"));
     return;
   }
 
+  const targetName = collection
+    ? collection.name
+    : (() => {
+        const lib = libID ? (Zotero.Libraries.get(libID) as { name?: string } | false) : false;
+        return lib && lib.name ? lib.name : "Library";
+      })();
   const progressLabel = getString("zotero-staticsync-sync-progress-start", {
-    args: { collection: collection.name },
+    args: { collection: targetName },
   });
 
   const progress = new ztoolkit.ProgressWindow("Zotero-StaticSync", {
@@ -197,7 +212,8 @@ function injectMenuItems(win: _ZoteroTypes.MainWindow, popup: XUL.MenuPopup) {
 
   const updateVisibility = () => {
     const collection = staticSync.getSelectedCollection();
-    const hidden = collection ? "false" : "true";
+    const hasLib = hasSelectedLibrary();
+    const hidden = collection || hasLib ? "false" : "true";
     menuItem.setAttribute("hidden", hidden);
     csvMenuItem.setAttribute("hidden", hidden);
   };
