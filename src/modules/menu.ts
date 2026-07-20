@@ -6,11 +6,20 @@ import { handleExportCsv } from "./csvexport";
 const MENU_ID = "zotero-collectionmenu-staticsync";
 const EXPORT_CSV_MENU_ID = "zotero-collectionmenu-staticsync-exportcsv";
 
-function getCollectionMenuPopup(win: _ZoteroTypes.MainWindow) {
-  return (
-    win.document.getElementById("zotero-collections-tree-context-menu") ||
-    win.document.getElementById("zotero-collectionmenu")
-  ) as XUL.MenuPopup | null;
+function getCollectionMenuPopups(win: _ZoteroTypes.MainWindow): XUL.MenuPopup[] {
+  const popups: XUL.MenuPopup[] = [];
+  // Zotero 7+ uses zotero-collectionmenu for the collection tree context menu
+  const ids = [
+    "zotero-collectionmenu",
+    "zotero-collections-tree-context-menu",
+  ];
+  for (const id of ids) {
+    const el = win.document.getElementById(id) as XUL.MenuPopup | null;
+    if (el && !popups.includes(el)) {
+      popups.push(el);
+    }
+  }
+  return popups;
 }
 
 function copyToClipboard(text: string) {
@@ -111,10 +120,13 @@ async function handleSyncCommand(win: _ZoteroTypes.MainWindow) {
 }
 
 export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
-  const popup = getCollectionMenuPopup(win);
-  if (!popup || win.document.getElementById(MENU_ID)) {
+  // Prevent duplicate registration across multiple windows/reloads
+  if (win.document.getElementById(MENU_ID)) {
     return;
   }
+
+  const popups = getCollectionMenuPopups(win);
+  if (!popups.length) return;
 
   // Sync Collection menu item
   const menuItem = win.document.createXULElement("menuitem");
@@ -132,41 +144,50 @@ export function registerCollectionMenu(win: _ZoteroTypes.MainWindow) {
     void handleExportCsv(win);
   });
 
-  popup.addEventListener("popupshowing", () => {
+  const updateVisibility = () => {
     const collection = staticSync.getSelectedCollection();
     const hidden = collection ? "false" : "true";
     menuItem.setAttribute("hidden", hidden);
     csvMenuItem.setAttribute("hidden", hidden);
-  });
+  };
 
-  popup.appendChild(menuItem);
-  popup.appendChild(csvMenuItem);
+  // Add menu items to ALL found popup menus (personal + group collections)
+  for (const popup of popups) {
+    popup.appendChild(menuItem);
+    popup.appendChild(csvMenuItem);
+    popup.addEventListener("popupshowing", updateVisibility);
+    break; // only append the actual elements to the first popup; clone for others
+  }
 
-  // Also register in the Zotero 7+ collection menu panel (for groups/libraries)
-  const menuPanel = win.document.getElementById("zotero-collectionmenu");
-  if (menuPanel && menuPanel !== popup) {
-    const syncItemGroup = win.document.createXULElement("menuitem");
-    syncItemGroup.id = MENU_ID + "-group";
-    syncItemGroup.setAttribute("label", getString("zotero-staticsync-collection-menu-label"));
-    syncItemGroup.addEventListener("command", () => {
+  // Clone items for additional popups (if both context menu and panel exist)
+  for (let i = 1; i < popups.length; i++) {
+    const syncClone = win.document.createXULElement("menuitem");
+    syncClone.id = MENU_ID + "-" + i;
+    syncClone.setAttribute("label", getString("zotero-staticsync-collection-menu-label"));
+    syncClone.addEventListener("command", () => {
       void handleSyncCommand(win);
     });
 
-    const csvItemGroup = win.document.createXULElement("menuitem");
-    csvItemGroup.id = EXPORT_CSV_MENU_ID + "-group";
-    csvItemGroup.setAttribute("label", getString("zotero-staticsync-csv-menu-label"));
-    csvItemGroup.addEventListener("command", () => {
+    const csvClone = win.document.createXULElement("menuitem");
+    csvClone.id = EXPORT_CSV_MENU_ID + "-" + i;
+    csvClone.setAttribute("label", getString("zotero-staticsync-csv-menu-label"));
+    csvClone.addEventListener("command", () => {
       void handleExportCsv(win);
     });
 
-    menuPanel.appendChild(syncItemGroup);
-    menuPanel.appendChild(csvItemGroup);
+    popups[i].appendChild(syncClone);
+    popups[i].appendChild(csvClone);
+    popups[i].addEventListener("popupshowing", updateVisibility);
   }
 }
 
 export function unregisterCollectionMenu(win: Window) {
+  // Remove the main menu items and any clones
   win.document.getElementById(MENU_ID)?.remove();
   win.document.getElementById(EXPORT_CSV_MENU_ID)?.remove();
-  win.document.getElementById(MENU_ID + "-group")?.remove();
-  win.document.getElementById(EXPORT_CSV_MENU_ID + "-group")?.remove();
+  // Remove clones (id pattern: MENU_ID-0, MENU_ID-1, etc.)
+  for (let i = 0; i < 10; i++) {
+    win.document.getElementById(`${MENU_ID}-${i}`)?.remove();
+    win.document.getElementById(`${EXPORT_CSV_MENU_ID}-${i}`)?.remove();
+  }
 }
