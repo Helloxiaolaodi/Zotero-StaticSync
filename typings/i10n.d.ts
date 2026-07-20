@@ -57,6 +57,7 @@ export type FluentMessageId =
   | 'zotero-staticsync-collab-action-report'
   | 'zotero-staticsync-collab-action-undo-add'
   | 'zotero-staticsync-collab-action-undo-claim'
+  | 'zotero-staticsync-collab-action-undo-report'
   | 'zotero-staticsync-collab-poll-error'
   | 'zotero-staticsync-collab-poll-start'
   | 'zotero-staticsync-collab-poll-stop'

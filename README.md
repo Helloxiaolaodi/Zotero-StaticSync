@@ -17,7 +17,7 @@ A Zotero plugin that exports Zotero collections to GitHub (Markdown + Hugo front
 - **Zotero group library support** — target a specific Zotero group via its Group ID
 - **Fixed share slug** — keep a stable, custom URL for repeated syncs instead of a random slug each time
 - **Collaborative sync profile** — enable web-to-Zotero bidirectional sync with background polling
-- **Collaboration workflow** — web-side actions (claim, report, add by DOI, undo) are applied to your Zotero library
+- **Collaboration workflow** — web-side actions (claim, report, add by DOI, undo claim, undo report, undo add) are applied to your Zotero library
 - **Export CSV** — export collection items to a local CSV file with customizable columns (default: sequence number + title)
 - **Public share frontend** — Next.js + Supabase share page with author formatting, status tabs, DOI links, and password gate
 
@@ -125,8 +125,11 @@ A companion Next.js frontend renders collection data from Supabase as a public w
 - Journal name in italic
 - Line-clamped titles
 - Password gate for protected collections (bilingual)
-- **Collaboration mode**: claim, report, add-by-DOI, and undo buttons with presenter name/date forms
+- **Collaboration mode**: claim, report, add-by-DOI, undo claim, undo report, and undo add buttons with presenter name/date forms
 - Improved categorization: checks readingStatus, collectionPath, collectionName, and tags in priority order; supports both Chinese and English collection names
+- **Tag-based auto-transition**: items with `claim_date:` or `report-date:` tags whose date has passed are automatically promoted from "claimed" to "reported"
+- **Supabase Realtime**: web frontend subscribes to `shared_collections` changes via WebSocket for instant data refresh
+- **Undo report**: reported items can be moved back to "claimed" via an undo report button
 
 ## Build from source
 

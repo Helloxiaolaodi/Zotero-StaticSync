@@ -19,6 +19,7 @@ zotero-staticsync-pref-poll-interval-help = How often Zotero checks for pending 
 zotero-staticsync-pref-default-password-help = Pre-filled password for new shares. Can be overridden per-sync. Leave blank for public access.
 zotero-staticsync-collab-action-claim = Claimed { $title }
 zotero-staticsync-collab-action-undo-claim = Unclaimed { $title }
+zotero-staticsync-collab-action-undo-report = Unreported { $title }
 zotero-staticsync-collab-action-report = Reported on { $title }
 zotero-staticsync-collab-action-add-by-doi = Added by DOI: { $doi }
 zotero-staticsync-collab-action-undo-add = Removed auto-added item { $title }

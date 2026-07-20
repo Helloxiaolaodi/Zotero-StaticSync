@@ -19,6 +19,7 @@ zotero-staticsync-pref-poll-interval-help = Zotero 检查网页端待处理操�
 zotero-staticsync-pref-default-password-help = 新建分享时预填的访问密码。每次同步可单独覆写。留空表示公开访问。
 zotero-staticsync-collab-action-claim = 已认领 { $title }
 zotero-staticsync-collab-action-undo-claim = 已撤销认领 { $title }
+zotero-staticsync-collab-action-undo-report = 已撤销汇报 { $title }
 zotero-staticsync-collab-action-report = 已汇报 { $title }
 zotero-staticsync-collab-action-add-by-doi = 已通过 DOI 添加：{ $doi }
 zotero-staticsync-collab-action-undo-add = 已删除自动添加的条目 { $title }

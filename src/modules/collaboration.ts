@@ -104,6 +104,24 @@ export class CollaborationManager {
         if (pendingCol) pendingCol.addItem(item.id);
         break;
       }
+      case "undo_report": {
+        if (!action.item_key) break;
+        const item = await this.findItemByKey(action.item_key);
+        if (!item) break;
+        // Remove report-specific tags only, keep claim tags
+        item.removeTag("auto_reported");
+        const tags = item.getTags();
+        for (const t of tags) {
+          if (t.tag.startsWith("reported_by:") || t.tag.startsWith("report_date:")) {
+            item.removeTag(t.tag);
+          }
+        }
+        await item.saveTx();
+        // Move back to claimed collection
+        const claimedCol = await this.findOrCreateCollection(claimedName);
+        if (claimedCol) claimedCol.addItem(item.id);
+        break;
+      }
       case "report": {
         if (!action.item_key) break;
         const item = await this.findItemByKey(action.item_key);
