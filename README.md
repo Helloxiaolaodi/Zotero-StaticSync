@@ -171,7 +171,7 @@ The built `.xpi` will be in `.scaffold/build/`.
 
 ## Requirements
 
-- Zotero 7 or later (compatible through Zotero 10-beta)
+- Zotero 7, 8, 9, 10-beta (compatibility declaration: Zotero 6.999 — 10.*; plugin version 0.0.5)
 - A Supabase project with the schema from `doc/supabase-schema.sql`
 
 ## Credits

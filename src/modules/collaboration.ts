@@ -139,33 +139,33 @@ export class CollaborationManager {
       }
      case "add_by_doi": {
        if (!action.doi) break;
-        const libID = Number(getPref("lastSyncedLibraryID")) || Zotero.Libraries.userLibraryID;
+       const libID = Number(getPref("lastSyncedLibraryID")) || Zotero.Libraries.userLibraryID;
 
-        // Pre-check: if a DOI-matching item already exists, claim it instead of adding duplicate
+       // Pre-check: if a DOI-matching item already exists, claim it instead of adding duplicate
        const s = new Zotero.Search();
        s.addCondition("libraryID", "is", libID);
        s.addCondition("DOI", "is", action.doi);
        const existingIDs = await s.search();
        if (existingIDs.length > 0) {
-          Zotero.debug(`Collaboration: DOI ${action.doi} already exists - claiming existing item instead of adding duplicate`);
-          for (const id of existingIDs) {
-            const existingItem = await Zotero.Items.getAsync(id);
-            if (!existingItem || !existingItem.isRegularItem()) continue;
-            if (action.reporter_name) {
-              existingItem.addTag("auto_claimed");
-              existingItem.addTag(`claimed_by:${action.reporter_name}`);
-              if (action.report_date) existingItem.addTag(`claim_date:${action.report_date}`);
-              await existingItem.saveTx();
-              const claimedCol = await this.findCollection(claimedName);
-              if (claimedCol) claimedCol.addItem(existingItem.id);
-            } else {
-              existingItem.addTag(`added_by:web`);
-              await existingItem.saveTx();
-              const pendingCol = await this.findCollection(pendingName);
-              if (pendingCol) pendingCol.addItem(existingItem.id);
-            }
-          }
-         break;
+         Zotero.debug(`Collaboration: DOI ${action.doi} already exists - claiming existing item instead of adding duplicate`);
+         for (const id of existingIDs) {
+           const existingItem = await Zotero.Items.getAsync(id);
+           if (!existingItem || !existingItem.isRegularItem()) continue;
+           if (action.reporter_name) {
+             existingItem.addTag("auto_claimed");
+             existingItem.addTag(`claimed_by:${action.reporter_name}`);
+             if (action.report_date) existingItem.addTag(`claim_date:${action.report_date}`);
+             await existingItem.saveTx();
+             const claimedCol = await this.findCollection(claimedName);
+             if (claimedCol) claimedCol.addItem(existingItem.id);
+           } else {
+             existingItem.addTag(`added_by:web`);
+             await existingItem.saveTx();
+             const pendingCol = await this.findCollection(pendingName);
+             if (pendingCol) pendingCol.addItem(existingItem.id);
+           }
+         }
+        break;
        }
 
        const translator = Zotero.Translate;
@@ -174,29 +174,36 @@ export class CollaborationManager {
        translate.setSearch({ itemType: "journalArticle", DOI: action.doi });
        const translators = await translate.getTranslators();
        if (translators.length) translate.setTranslator(translators[0].translatorID);
-        const newItems = await translate.translate({ libraryID: libID, saveAttachments: false });
+       const newItems = await translate.translate({ libraryID: libID, saveAttachments: false });
        if (newItems.length) {
          const newItem = newItems[0];
          if (action.reporter_name) newItem.addTag(`added_by:${action.reporter_name}`);
          if (action.report_date) newItem.addTag(`added_date:${action.report_date}`);
-          // If reporter_name is present, also claim the newly added item
-          if (action.reporter_name) {
-            newItem.addTag("auto_claimed");
-            newItem.addTag(`claimed_by:${action.reporter_name}`);
-            if (action.report_date) newItem.addTag(`claim_date:${action.report_date}`);
-            const claimedCol = await this.findCollection(claimedName);
-            if (claimedCol) claimedCol.addItem(newItem.id);
-          } else {
-            // No reporter_name: submitted from To Read section
-            newItem.addTag(`added_by:web`);
-            const pendingCol = await this.findCollection(pendingName);
-            if (pendingCol) pendingCol.addItem(newItem.id);
-          }
-         await newItem.saveTx();
+         // If reporter_name is present, also claim the newly added item
+         if (action.reporter_name) {
+           newItem.addTag("auto_claimed");
+           newItem.addTag(`claimed_by:${action.reporter_name}`);
+           if (action.report_date) newItem.addTag(`claim_date:${action.report_date}`);
+           const claimedCol = await this.findCollection(claimedName);
+           if (claimedCol) claimedCol.addItem(newItem.id);
+         } else {
+           // No reporter_name: submitted from To Read section
+           newItem.addTag(`added_by:web`);
+           const pendingCol = await this.findCollection(pendingName);
+           if (pendingCol) pendingCol.addItem(newItem.id);
+         }
+        await newItem.saveTx();
        }
        break;
      }
-      case "undo_add": {
+     case "web_action": {
+       // Web already applied this change via Zotero Group API. Skip local processing;
+       // just mark as processed so silentSyncBack triggers and pushes updated data
+       // back to Supabase, keeping the web frontend in sync.
+       Zotero.debug(`Collaboration: web_action signal received (source: ${action.source_slug}), skipping local processing`);
+       break;
+     }
+     case "undo_add": {
         if (!action.item_key) break;
         try {
           const item = await this.findItemByKey(action.item_key);
@@ -263,14 +270,14 @@ export class CollaborationManager {
      Zotero.debug(`Collaboration: poll error: ${e}`);
    }
 
-    // Push updated state back to Supabase after processing web actions
-    if (processedCount > 0) {
-      try {
-        await staticSync.silentSyncBack();
-      } catch (e) {
-        Zotero.debug(`Collaboration: silent sync-back failed: ${e}`);
-      }
-    }
+   // Push updated state back to Supabase after processing web actions
+   if (processedCount > 0) {
+     try {
+       await staticSync.silentSyncBack();
+     } catch (e) {
+       Zotero.debug(`Collaboration: silent sync-back failed: ${e}`);
+     }
+   }
  }
 
   /** Schedule an immediate poll after a brief delay, debouncing repeat calls. */
