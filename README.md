@@ -141,7 +141,7 @@ A companion Next.js frontend renders collection data from Supabase as a public w
 - **Undo on all web-added items**: DOI-added, batch-imported, and claimed-section items all show an undo-add button
 - **DOI deduplication**: web and plugin both skip DOI duplicates (Crossref fetch / Zotero import) to avoid duplicate-item popups
 - Improved categorization: checks readingStatus, collectionPath, collectionName, and tags in priority order; supports both Chinese and English collection names
-- **Tag-based auto-transition**: items with `claim_date:` or `report-date:` tags whose date has passed are automatically promoted from "claimed" to "reported"
+- **Tag-based auto-transition**: the plugin physically moves due items from the claimed/to-read workflow collections into the configured Reported collection, removes stale workflow or direct root membership, and syncs the updated state back to Supabase
 - **Supabase Realtime**: web frontend subscribes to `shared_collections` changes via WebSocket for instant data refresh
 - **Undo report**: reported items can be moved back to "claimed" via an undo report button
 ## Cloudflare Pages API (direct mode)
@@ -171,7 +171,7 @@ The built `.xpi` will be in `.scaffold/build/`.
 
 ## Requirements
 
-- Zotero 7, 8, 9, 10-beta (compatibility declaration: Zotero 6.999 — 10.*; plugin version 0.0.5)
+- Zotero 7, 8, 9, 10-beta (compatibility declaration: Zotero 6.999 — 10.*; plugin version 0.0.6)
 - A Supabase project with the schema from `doc/supabase-schema.sql`
 
 ## Credits
